@@ -34,10 +34,23 @@ export class RestaurantsService {
     }
 
     async getRestaurant(restId: number, userId: number) {
-        let rest = await this.restRepo.findOne(restId, {relations: ['creator']});
-        (<any>rest).mine = rest.creator.id === userId;
-        (<any>rest).commented = await this.comRepo.findOne({where: {user: userId, restaurant: rest.id}})? true: false;
-        return rest;
+        const user = await this.usersService.getUser(userId);
+        let rest = null;
+        rest = await this.restRepo.createQueryBuilder('restaurant')
+        .leftJoinAndSelect('restaurant.creator', 'user')
+        .where('restaurant.id = ' + restId)
+        .addSelect('haversine(restaurant.lat, restaurant.lng, :userLat, :userLng)', 'distance')
+        .setParameter('userLat', user.lat)
+        .setParameter('userLng', user.lng)
+        .loadRelationIdAndMap('restaurant.creator', 'restaurant.creator')
+        .getRawAndEntities();
+        
+        let restEnt: Restaurant = rest.entities[0];
+        (<any>restEnt).mine = restEnt.creator.id === userId;
+        (<any>restEnt).commented = await this.comRepo.findOne({where: {user: userId, restaurant: restEnt.id}})? true: false;
+        (<any>restEnt).distance = rest.raw[0].distance;
+        restEnt.creator = await this.usersService.getUser(+restEnt.creator);
+        return restEnt;
     }
 
     async insertRestaurant(restaurant: InsertRestaurantDto) {
