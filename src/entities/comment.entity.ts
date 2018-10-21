@@ -17,9 +17,9 @@ export class Comment {
     @CreateDateColumn({type: "datetime"})
     date: Date;
 
-    @ManyToOne(type => Restaurant, rest => rest.comments, {nullable: false})
+    @ManyToOne(type => Restaurant, rest => rest.comments, {nullable: false, cascade: true, onDelete: "CASCADE"})
     restaurant: Restaurant;
 
-    @ManyToOne(type => User, user => user.comments, {nullable: false})
+    @ManyToOne(type => User, user => user.comments, {nullable: false, cascade: true, onDelete: "CASCADE"})
     user: User;
 }
