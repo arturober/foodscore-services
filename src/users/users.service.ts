@@ -11,7 +11,7 @@ import { ImageService } from 'commons/image.service';
 export class UsersService {
     constructor(
         @InjectRepository(User) private readonly userRepo: Repository<User>,
-        private readonly imageService: ImageService
+        private readonly imageService: ImageService,
     ) { }
 
     async getUser(id: number): Promise<User> {
@@ -19,7 +19,7 @@ export class UsersService {
     }
 
     async emailExists(email: string): Promise<boolean> {
-        return (await this.userRepo.findOne({email}))? true : false;
+        return (await this.userRepo.findOne({email})) ? true : false;
     }
 
     async updateUserInfo(id: number, user: UpdateUserDto): Promise<void> {
