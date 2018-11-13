@@ -89,3 +89,5 @@ img/restaurants/*
 img/users/*
 !img/restaurants/README.md
 !img/users/README.md
+
+.directory

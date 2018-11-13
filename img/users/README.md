@@ -1,0 +1,1 @@
+The README file is only created for git (to add the directory)
