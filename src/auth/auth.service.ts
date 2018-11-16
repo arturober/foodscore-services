@@ -14,12 +14,12 @@ export class AuthService {
         @Inject('JWT_KEY') private jwt_key: string,
         @Inject('JWT_EXPIRATION') private jwt_expiration: number,
         @InjectRepository(User) private readonly userRepo: Repository<User>,
-        private readonly imageService: ImageService
+        private readonly imageService: ImageService,
     ) { }
 
     private createToken(user: User) {
         const data: JwtPayload = {
-            id: user.id
+            id: user.id,
         };
         const expiresIn = this.jwt_expiration;
         const accessToken = jwt.sign(data, this.jwt_key, { expiresIn });
@@ -36,8 +36,8 @@ export class AuthService {
     }
 
     async login(userDto: LoginUserDto) {
-        let user = await this.userRepo.findOneOrFail({email: userDto.email, password: userDto.password});
-        if(userDto.lat && userDto.lng) {
+        const user = await this.userRepo.findOneOrFail({email: userDto.email, password: userDto.password});
+        if (userDto.lat && userDto.lng) {
             user.lat = userDto.lat;
             user.lng = userDto.lng;
             await this.userRepo.save(user);

@@ -13,7 +13,7 @@ export class RegisterUserDto {
     readonly email: string;
 
     @IsString()
-    @Transform((p,o,t) => p ? crypto.createHash('sha256').update(p).digest('base64'):null)
+    @Transform((p, o, t) => p ? crypto.createHash('sha256').update(p).digest('base64') : null)
     password: string;
 
     @IsString()
