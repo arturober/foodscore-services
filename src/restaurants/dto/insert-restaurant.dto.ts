@@ -21,6 +21,7 @@ export class InsertRestaurantDto {
     @IsString()
     image: string;
 
+    @Transform((value, o, t) => typeof value === 'string' ? value.split(',') : value)
     @IsArray()
     cuisine: string[];
 
