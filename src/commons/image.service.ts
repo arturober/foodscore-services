@@ -4,7 +4,7 @@ import * as path from 'path';
 
 @Injectable()
 export class ImageService {
-    saveImage(dir:string, photo: string): Promise<string> {
+    saveImage(dir: string, photo: string): Promise<string> {
         const data = photo.split(',')[1] || photo;
         return new Promise((resolve, reject) => {
           const filePath = path.join('img', dir, `${Date.now()}.jpg`);

@@ -1,7 +1,7 @@
 import { Injectable, HttpException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Restaurant } from 'entities/restaurant.entity';
-import { Repository } from 'typeorm';
+import { Repository, SelectQueryBuilder } from 'typeorm';
 import { InsertRestaurantDto } from './dto/insert-restaurant.dto';
 import { Comment } from 'entities/comment.entity';
 import { ImageService } from 'commons/image.service';
@@ -13,24 +13,38 @@ export class RestaurantsService {
         @InjectRepository(Restaurant) private readonly restRepo: Repository<Restaurant>,
         @InjectRepository(Comment) private readonly comRepo: Repository<Comment>,
         private readonly imageService: ImageService,
-        private readonly usersService: UsersService
+        private readonly usersService: UsersService,
     ) {}
 
-    async getAllRestaurants(userId: number): Promise<Restaurant[]> {
+    private async getRestaurantsSelect(userId: number) {
         const user = await this.usersService.getUser(userId);
-        let rests = await this.restRepo.createQueryBuilder('restaurant')
+        return this.restRepo.createQueryBuilder('restaurant')
             .addSelect('haversine(restaurant.lat, restaurant.lng, :userLat, :userLng)', 'distance')
             .setParameter('userLat', user.lat)
-            .setParameter('userLng', user.lng)
-            .loadRelationIdAndMap('restaurant.creator', 'restaurant.creator')
+            .setParameter('userLng', user.lng);
+    }
+
+    private async getRestaurants(userId: number, selectQuery: SelectQueryBuilder<Restaurant>): Promise<Restaurant[]> {
+        const rests = await selectQuery.loadRelationIdAndMap('restaurant.creator', 'restaurant.creator')
             .orderBy('distance')
             .getRawAndEntities();
         return rests.entities.map((r, i) => {
-            (<any>r).mine = +r.creator === userId;
-            (<any>r).distance = rests.raw[i].distance;
+            (r as any).mine = +r.creator === userId;
+            (r as any).distance = rests.raw[i].distance;
             delete r.creator;
             return r;
         });
+    }
+
+    async getAllRestaurants(userId: number): Promise<Restaurant[]> {
+        const select = await this.getRestaurantsSelect(userId);
+        return await this.getRestaurants(userId, select);
+    }
+
+    async getMyRestaurants(userId: number) {
+        const select = (await this.getRestaurantsSelect(userId))
+            .where('restaurant.creator = :id', { id : userId });
+        return this.getRestaurants(userId, select);
     }
 
     async getRestaurant(restId: number, userId: number) {
@@ -44,11 +58,11 @@ export class RestaurantsService {
         .setParameter('userLng', user.lng)
         .loadRelationIdAndMap('restaurant.creator', 'restaurant.creator')
         .getRawAndEntities();
-        
-        let restEnt: Restaurant = rest.entities[0];
-        (<any>restEnt).mine = restEnt.creator.id === userId;
-        (<any>restEnt).commented = await this.comRepo.findOne({where: {user: userId, restaurant: restEnt.id}})? true: false;
-        (<any>restEnt).distance = rest.raw[0].distance;
+
+        const restEnt: Restaurant = rest.entities[0];
+        (restEnt as any).mine = restEnt.creator.id === userId;
+        (restEnt as any).commented = await this.comRepo.findOne({where: {user: userId, restaurant: restEnt.id}}) ? true : false;
+        (restEnt as any).distance = rest.raw[0].distance;
         restEnt.creator = await this.usersService.getUser(+restEnt.creator);
         return restEnt;
     }

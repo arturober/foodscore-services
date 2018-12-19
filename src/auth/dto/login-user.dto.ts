@@ -1,6 +1,6 @@
-import { IsEmail, IsString, IsNumber, IsOptional } from "class-validator";
+import { IsEmail, IsString, IsNumber, IsOptional } from 'class-validator';
 import * as crypto from 'crypto';
-import { Transform } from "class-transformer";
+import { Transform } from 'class-transformer';
 
 export class LoginUserDto {
     @IsEmail()

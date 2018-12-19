@@ -11,6 +11,7 @@ import {
   ConflictException,
   HttpException,
   BadRequestException,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { RegisterUserDto } from './dto/register-user.dto';
@@ -39,13 +40,7 @@ export class AuthController {
     try {
       return await this.authService.login(userDto);
     } catch (e) {
-      throw new HttpException(
-        {
-          status: HttpStatus.UNAUTHORIZED,
-          error: 'Email or password incorrect',
-        },
-        HttpStatus.UNAUTHORIZED,
-      );
+      throw new UnauthorizedException('Email or password incorrect');
     }
   }
 
