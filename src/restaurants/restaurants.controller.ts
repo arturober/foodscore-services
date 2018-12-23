@@ -32,7 +32,7 @@ export class RestaurantsController {
     return { restaurants };
   }
 
-  @Get(':mine')
+  @Get('mine')
   async getMyRestaurants(@Req() req: any) {
     const restaurants = await this.restService.getMyRestaurants(req.user.id);
     return { restaurants };
@@ -81,7 +81,15 @@ export class RestaurantsController {
   ) {
     comDto.user = req.user.id;
     comDto.restaurant = restId;
-    const comment = await this.commentsService.insertComment(comDto);
-    return { comment: await this.commentsService.getComment(comment.id) };
+    try {
+      const comment = await this.commentsService.insertComment(comDto);
+      return { comment: await this.commentsService.getComment(comment.id) };
+    } catch (e) {
+      if (e.code === 'ER_DUP_ENTRY') {
+        throw new HttpException('Only one comment allowed per user and restaurant', 400);
+      } else {
+        throw new HttpException('Restaurant not found', 404);
+      }
+    }
   }
 }

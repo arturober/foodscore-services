@@ -130,7 +130,7 @@ Ejemplo de **petición** (_lat_ y _lng_ son opcionales):
     "password": "1234",
     "lat": 0.372453452,
     "lng": -0.6553454,
-    "avatar": "Image codificada en base64"
+    "avatar": "Imagen codificada en base64"
 }
 ```
 
@@ -146,11 +146,321 @@ Este servicio simplemente comprueba que el token de autenticación que se envía
 
 O un código 401 (Not Authorized) si no es válido.
 
-### Colección /users
-
-
 
 ### Colección /restaurants
 
+Todos los servicios de esta colección requieren del token de autenticación.
 
+* **GET /restaurants**
 
+Devuelve todos los restaurantes, ordenados por distancia respecto al usuario actual. El objeto devuelto tendrá un array con dichos restaurantes. Además de los datos del restaurante almacenado, devolverá la puntuación media del mismo (*stars*), la distancia del usuario al restaurante en km (*distance*), y si el restaurante pertenece al usuario (*mine*).
+
+Los días que abre el restaurante y el tipo de cocina se almacenan en la base de datos como cadena de caracteres, con los elementos separados por coma, pero el servicio los devuelve como array.
+
+```json
+{
+    "restaurants": [
+        {
+            "id": 19,
+            "name": "Restaurant",
+            "description": "Description",
+            "daysOpen": [
+                "3",
+                "4",
+                "5",
+                "6",
+                "0"
+            ],
+            "phone": "234543654",
+            "image": "img/restaurants/1540120779126.jpg",
+            "address": "Calle Cuba, San Vicente del Raspeig",
+            "cuisine": [
+                "Nothing"
+            ],
+            "stars": "4.00",
+            "lat": "38.3920720",
+            "lng": "-0.5145030",
+            "mine": false,
+            "distance": 91.05379486083984
+        },
+        ...
+    ]
+}
+```
+
+* **GET /restaurants/mine**
+
+Igual que el servicio **/restaurants** pero sólo devuelve los restaurantes cuyo creador es el usuario actual.
+
+* **GET /restaurants/:id**
+
+Devuelve la información del restaurante cuya id recibe por parámetro en la url. En caso de no existir, devolverá un código de error 404.
+
+Además de la información que devuelve cuando solicitamos varios restaurantes (servicios anteriores), también devolverá información sobre el usuario creador del mismo.
+
+Ejemplo de llamada a **/restaurants/19**.
+
+```json
+{
+    "restaurant": {
+        "id": 19,
+        "name": "Restaurant",
+        "description": "Description",
+        "daysOpen": [
+            "3",
+            "4",
+            "5",
+            "6",
+            "0"
+        ],
+        "phone": "234543654",
+        "image": "img/restaurants/1540120779126.jpg",
+        "address": "Calle Cuba, San Vicente del Raspeig",
+        "cuisine": [
+            "Nothing"
+        ],
+        "stars": "4.00",
+        "lat": "38.3920720",
+        "lng": "-0.5145030",
+        "creator": {
+            "id": 25,
+            "name": "Peter Griffin",
+            "email": "p@p.es",
+            "avatar": "img/users/1540121477498.jpg",
+            "lat": "38.3471226",
+            "lng": "-0.4974451"
+        },
+        "mine": false,
+        "commented": false,
+        "distance": 91.05379486083984
+    }
+}
+```
+
+* **POST /restaurants**
+
+Crea un nuevo restaurante en la base de datos. Ejemplo de información que debe de recibir el servicio:
+
+```json
+{
+  "name": "Restaurant",
+  "description": "Description",
+  "daysOpen": ["1","4","5","6"],
+  "cuisine": ["Italian"],
+  "phone": "934234512",
+  "address": "Some street",
+  "lat": 39.2345235,
+  "lng": -1.4235,
+  "image": "Imagen en base64"
+}
+```
+
+El servicio devolverá, si todo ha ido bien y se ha insertado el restaurante, el objeto recién insertado en la base de datos, con su id y la url de la imagen guardada en el servidor:
+
+```json
+{
+    "restaurant": {
+        "creator": 27,
+        "name": "Restaurant",
+        "description": "Description",
+        "daysOpen": [
+            "1",
+            "4",
+            "5",
+            "6"
+        ],
+        "cuisine": [
+            "Italian"
+        ],
+        "phone": "934234512",
+        "address": "Some street",
+        "lat": "39.2345235",
+        "lng": "-1.4235000",
+        "image": "img/restaurants/1545563381872.jpg",
+        "id": 34,
+        "stars": "0.00"
+    }
+}
+```
+
+Normalmente, cuando los datos enviados sean insuficientes o no estén en el formato correcto, el servidor devolverá un error 400 (Bad request).
+
+* **DELETE /restaurants/:id**
+
+Este servicio borra un restaurante de la base de datos y devuelve la id del restaurante eliminado, o un error 404 si el restaurante a borrar no existe. Si intentamos borrar un restaurante que no sea nuestro, debería devolver un código 401 (not authorized).
+
+Ejemplo de respuesta a la llamada **/restaurants/34**
+
+```json
+{
+    "id": 34
+}
+```
+
+* **GET /restaurants/:id/comments**
+
+Devuelve un objeto que contiene un array con todos los comentarios que han realizado los usuarios sobre un restaurante.
+
+```json
+{
+    "comments": [
+        {
+            "id": 21,
+            "stars": 4,
+            "text": "Good food",
+            "date": "2018-10-21T11:22:33.467Z",
+            "user": {
+                "id": 25,
+                "name": "Peter Griffin",
+                "email": "p@p.es",
+                "avatar": "img/users/1540121477498.jpg",
+                "lat": "38.3471226",
+                "lng": "-0.4974451"
+            }
+        },
+        ...
+    ]
+}
+```
+
+* **POST /restaurants/:id/comments**
+
+Inserta un nuevo comentario en un restaurante. Sólo se permite un comentario por usuario y restaurante, por lo que si se intenta volver a comentar, devolverá un código de error 400 (Bad request):
+
+```json
+{
+    "statusCode": 400,
+    "message": "Only one comment allowed per user and restaurant"
+}
+```
+
+También devolverá un 404 si el restaurante no existe, o un 400 si falta información o el formato no es correcto.
+
+Ejemplo de comentario:
+
+```json
+{
+  "stars": 4,
+  "text": "Good restaurant"
+}
+```
+
+La respuesta será la información del comentario insertado en la base de datos:
+
+```json
+{
+    "comment": {
+        "id": 38,
+        "stars": 4,
+        "text": "Good restaurant",
+        "date": "2018-12-23T11:35:07.204Z",
+        "user": {
+            "id": 27,
+            "name": "Tom",
+            "email": "tom2@email.com",
+            "avatar": "img\\users\\1541009537495.jpg",
+            "lat": "37.8235530",
+            "lng": "-1.2654570"
+        }
+    }
+}
+```
+
+### Colección /users
+
+Todos los servicios de esta colección requieren del token de autenticación.
+
+* **GET /users/me**
+
+Devuelve la información del perfil del usuario autenticado. El booleano **me** indica si la información es del usuario autenticado o de otro.
+
+```json
+{
+    "user": {
+        "id": 27,
+        "name": "Tom",
+        "email": "tom2@email.com",
+        "avatar": "img\\users\\1541009537495.jpg",
+        "lat": "37.8235530",
+        "lng": "-1.2654570",
+        "me": true
+    }
+}
+```
+
+* **GET /users/:id**
+
+Igual que **/users/me** pero devuelve la información del usuario cuya id recibe en la url. Devuelve un error 404 si el usuario no existe.
+
+Ejemplo de llamada a **/users/22**:
+
+```json
+{
+    "user": {
+        "id": 22,
+        "name": "John Wayne",
+        "email": "email2@email.com",
+        "avatar": "img/users/1539948671405.jpg",
+        "lat": "41.3254320",
+        "lng": "-1.2345500",
+        "me": false
+    }
+}
+```
+
+* **PUT /users/me**
+
+Modifica la información del nombre y correo del usuario autenticado.
+
+Ejemplo de petición:
+
+```json
+{
+  "name": "John",
+  "email": "email@email.com"
+}
+```
+
+Responde simplemente con una confirmación si todo ha ido bien (O error 400 si los datos de entrada son insuficientes o erróneos):
+
+```json
+{
+    "ok": true
+}
+```
+
+* **PUT /users/me/avatar**
+
+Modifica el avatar del usuario autenticado. Ejemplo de petición:
+
+```json
+{
+    "avatar": "Imagen en base 64"
+}
+```
+
+Responde con la url de la nueva imagen almacenada en el servidor:
+
+```json
+{
+    "avatar": "img/users/1545565439800.jpg"
+}
+```
+
+* **PUT /users/me/password**
+
+Actualiza la contraseña del usuario autenticado:
+
+```json
+{
+  "password": "1234"
+}
+```
+
+Responde simplemente con una confirmación si todo ha ido bien:
+
+```json
+{
+    "ok": true
+}
+```
