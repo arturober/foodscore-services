@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as download from 'image-downloader';
 
 @Injectable()
 export class ImageService {
@@ -13,5 +14,14 @@ export class ImageService {
             resolve(filePath);
           });
         });
+    }
+
+    async downloadImage(dir: string, url: string): Promise<string> {
+      const filePath = path.join('img', dir, `${Date.now()}.jpg`);
+      await download.image({
+        url,
+        dest: filePath,
+      });
+      return filePath;
     }
 }

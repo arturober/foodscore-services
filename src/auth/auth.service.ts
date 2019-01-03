@@ -1,12 +1,16 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'entities/user.entity';
-import { Repository } from 'typeorm';
+import { Repository, DeepPartial } from 'typeorm';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
 import * as jwt from 'jsonwebtoken';
+import * as request from 'request-promise';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
 import { ImageService } from 'commons/image.service';
+import { OAuth2Client } from 'google-auth-library';
+import { UsersService } from 'users/users.service';
+import { LoginTokenDto } from './dto/login-token.dto';
 
 @Injectable()
 export class AuthService {
@@ -15,6 +19,7 @@ export class AuthService {
         @Inject('JWT_EXPIRATION') private jwt_expiration: number,
         @InjectRepository(User) private readonly userRepo: Repository<User>,
         private readonly imageService: ImageService,
+        private readonly userService: UsersService,
     ) { }
 
     private createToken(user: User) {
@@ -43,5 +48,64 @@ export class AuthService {
             await this.userRepo.save(user);
         }
         return this.createToken(user);
+    }
+
+    async loginGoogle(tokenDto: LoginTokenDto) {
+        const client = new OAuth2Client('557331834920-vj2qta552qlmdbdsm5meh1lpl0dd2sod.apps.googleusercontent.com');
+        const ticket = await client.verifyIdToken({
+            idToken: tokenDto.token,
+            audience: '557331834920-vj2qta552qlmdbdsm5meh1lpl0dd2sod.apps.googleusercontent.com',
+        });
+        const payload = ticket.getPayload();
+        const email = payload.email;
+        let user: DeepPartial<User> = await this.userService.getUserbyEmail(email);
+        const avatar = await this.imageService.downloadImage('users', payload.picture);
+        if (!user) {
+            user = {
+                email,
+                name: payload.name,
+                avatar,
+                lat: tokenDto.lat ? tokenDto.lat : 0,
+                lng: tokenDto.lng ? tokenDto.lng : 0,
+            };
+            user = await this.userRepo.save(user);
+        }
+        return this.createToken(user as User);
+    }
+
+    async loginFacebook(tokenDto: LoginTokenDto) {
+        const options = {
+            method: 'GET',
+            uri: 'https://graph.facebook.com/me',
+            qs: {
+                access_token: tokenDto.token,
+                fields: 'id,name,email',
+            },
+            json: true,
+        };
+        const respUser = await request(options);
+
+        let user: DeepPartial<User> = await this.userService.getUserbyEmail(respUser.email);
+        if (!user) {
+            const optionsImg = {
+                method: 'GET',
+                uri: 'https://graph.facebook.com/me/picture',
+                qs: {
+                    access_token: tokenDto.token,
+                    type: 'large',
+                },
+            };
+            const respImg = request(optionsImg);
+            const avatar = await this.imageService.downloadImage('users', respImg.url);
+            user = {
+                email: respUser.email,
+                name: respUser.name,
+                avatar,
+                lat: tokenDto.lat ? tokenDto.lat : 0,
+                lng: tokenDto.lng ? tokenDto.lng : 0,
+            };
+            user = await this.userRepo.save(user);
+        }
+        return this.createToken(user as User);
     }
 }

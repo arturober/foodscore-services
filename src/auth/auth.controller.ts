@@ -8,8 +8,6 @@ import {
   Body,
   Res,
   HttpStatus,
-  ConflictException,
-  HttpException,
   BadRequestException,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -18,6 +16,7 @@ import { RegisterUserDto } from './dto/register-user.dto';
 import { AuthService } from './auth.service';
 import { Response } from 'express';
 import { LoginUserDto } from './dto/login-user.dto';
+import { LoginTokenDto } from './dto/login-token.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -41,6 +40,26 @@ export class AuthController {
       return await this.authService.login(userDto);
     } catch (e) {
       throw new UnauthorizedException('Email or password incorrect');
+    }
+  }
+
+  @Post('google')
+  @UsePipes(new ValidationPipe({ transform: true }))
+  async loginGoogle(@Body() tokenDto: LoginTokenDto) {
+    try {
+      return await this.authService.loginGoogle(tokenDto);
+    } catch (e) {
+      throw new UnauthorizedException('Login failed');
+    }
+  }
+
+  @Post('facebook')
+  @UsePipes(new ValidationPipe({ transform: true }))
+  async loginFacebook(@Body() tokenDto: LoginTokenDto) {
+    try {
+      return await this.authService.loginFacebook(tokenDto);
+    } catch (e) {
+      throw new UnauthorizedException('Login failed');
     }
   }
 

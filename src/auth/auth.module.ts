@@ -13,16 +13,16 @@ import { CommonsModule } from 'commons/commons.module';
   controllers: [AuthController],
   providers: [
     IsUserAlreadyExistConstraint,
-    AuthService, 
+    AuthService,
     JwtStrategy,
     {
       provide: 'JWT_KEY',
-      useValue: 'YTRnNk05TC4sLeG4iSorYXNkZg=='
+      useValue: 'YTRnNk05TC4sLeG4iSorYXNkZg==',
     },
     {
       provide: 'JWT_EXPIRATION',
-      useValue: 3600 * 24 * 365 // A year
+      useValue: 3600 * 24 * 365, // A year
     },
-  ]
+  ],
 })
 export class AuthModule {}

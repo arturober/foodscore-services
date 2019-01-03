@@ -111,11 +111,50 @@ En caso de error en el login (usuario y contraseña no válidos), se devolverá 
 
 * **POST /auth/google**
 
-(Aún no implementado). Comprobará el login a partir del token de Google Plus
+Este servicio recibe el campo **id_token** que devuelve la identificación mediante Google en el cliente. Lo valida y comprueba el correo en la base de datos. Si el correo existe funciona como un login normal, y si no existe registra al usuario (a partir de los datos obtenidos de Google) en la base de datos. Devuelve un token de autenticación válido para el servidor (como el login).
+
+Ejemplo de envío (lat y lng son opcionales):
+
+```json
+{
+    "token": "id_token de Google",
+    "lat": 37.823553,
+    "lng": -1.265457
+}
+```
+
+Ejemplo de respuesta:
+
+```json
+{
+    "accessToken": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE0ODU5MDA1MzgsImlkIjoiMSIsIm5hbWUiOiJQcnVlYmEiLCJlbWFpbCI6InBydWViYUBjb3JyZW8uZXMifQ.vf7hwA3gceCDvOCa9RoWxR9cJ5mARnbAs6Nv9VBlPdc"
+}
+```
+
+https://developers.google.com/identity/sign-in/web/backend-auth
 
 * **POST /auth/facebook**
 
-(Aún no implementado). Comprobará el login a partir del token de Facebook
+Este servicio recibe el campo **accessToken** que devuelve la identificación mediante Facebook en el cliente. Lo valida y comprueba el correo en la base de datos. Si el correo existe funciona como un login normal, y si no existe registra al usuario (a partir de los datos obtenidos de Facebook) en la base de datos. Devuelve un token de autenticación válido para el servidor (como el login).
+
+Ejemplo de envío (lat y lng son opcionales):
+
+```json
+{
+    "token": "accessToken de Facebook",
+    "lat": 37.823553,
+    "lng": -1.265457
+}
+```
+
+Ejemplo de respuesta:
+
+```json
+{
+    "accessToken": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE0ODU5MDA1MzgsImlkIjoiMSIsIm5hbWUiOiJQcnVlYmEiLCJlbWFpbCI6InBydWViYUBjb3JyZW8uZXMifQ.vf7hwA3gceCDvOCa9RoWxR9cJ5mARnbAs6Nv9VBlPdc"
+}
+
+https://lorenstewart.me/2017/03/12/using-node-js-to-interact-with-facebooks-graph-api/
 
 * **POST /auth/register**
 
