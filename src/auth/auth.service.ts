@@ -69,6 +69,10 @@ export class AuthService {
                 lng: tokenDto.lng ? tokenDto.lng : 0,
             };
             user = await this.userRepo.save(user);
+        } else if (tokenDto.lat && tokenDto.lng) {
+            user.lat = tokenDto.lat;
+            user.lng = tokenDto.lng;
+            await this.userRepo.save(user);
         }
         return this.createToken(user as User);
     }
@@ -86,6 +90,7 @@ export class AuthService {
         const respUser = await request(options);
 
         let user: DeepPartial<User> = await this.userService.getUserbyEmail(respUser.email);
+
         if (!user) {
             const optionsImg = {
                 method: 'GET',
@@ -105,7 +110,12 @@ export class AuthService {
                 lng: tokenDto.lng ? tokenDto.lng : 0,
             };
             user = await this.userRepo.save(user);
+        } else if (tokenDto.lat && tokenDto.lng) {
+            user.lat = tokenDto.lat;
+            user.lng = tokenDto.lng;
+            await this.userRepo.save(user);
         }
+
         return this.createToken(user as User);
     }
 }
