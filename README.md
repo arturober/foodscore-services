@@ -231,6 +231,10 @@ Los días que abre el restaurante y el tipo de cocina se almacenan en la base de
 
 Igual que el servicio **/restaurants** pero sólo devuelve los restaurantes cuyo creador es el usuario actual.
 
+* **GET /restaurants/user/:id**
+
+Igual que el servicio **/restaurants** pero sólo devuelve los restaurantes del usuario cuya id recibe por parametro.
+
 * **GET /restaurants/:id**
 
 Devuelve la información del restaurante cuya id recibe por parámetro en la url. En caso de no existir, devolverá un código de error 404.
@@ -323,6 +327,12 @@ El servicio devolverá, si todo ha ido bien y se ha insertado el restaurante, el
 ```
 
 Normalmente, cuando los datos enviados sean insuficientes o no estén en el formato correcto, el servidor devolverá un error 400 (Bad request).
+
+* **PUT /restaurants/:id**
+
+Similar al servicio anterior (añadir restaurante), pero además se envía en la url la id del restaurante que se va a modificar. Se debe enviar toda la información otra vez, dejando los campos que no han cambiado con su valor original.
+
+Devuelve, si todo sale bien, el restaurante con la información modificada.
 
 * **DELETE /restaurants/:id**
 

@@ -47,6 +47,12 @@ export class RestaurantsService {
         return this.getRestaurants(userId, select);
     }
 
+    async getUserRestaurants(userId: number, loggedId: number) {
+        const select = (await this.getRestaurantsSelect(userId))
+            .where('restaurant.creator = :id', { id : userId });
+        return this.getRestaurants(loggedId, select);
+    }
+
     async getRestaurant(restId: number, userId: number) {
         const user = await this.usersService.getUser(userId);
         let rest = null;
@@ -71,6 +77,18 @@ export class RestaurantsService {
         restaurant.image = await this.imageService.saveImage('restaurants', restaurant.image);
         restaurant.cuisine = restaurant.cuisine.map(c => c.trim());
         return await this.restRepo.save(restaurant);
+    }
+
+    async updateRestaurant(id: number, restaurant: InsertRestaurantDto, userId: number) {
+        if (!restaurant.image.includes('restaurants')) {
+            restaurant.image = await this.imageService.saveImage('restaurants', restaurant.image);
+        } else {
+            restaurant.image = restaurant.image.substr(restaurant.image.indexOf('img/'));
+        }
+        restaurant.cuisine = restaurant.cuisine.map(c => c.trim());
+        delete restaurant.creator;
+        await this.restRepo.update(id, restaurant);
+        return await this.getRestaurant(id, userId);
     }
 
     deleteRestaurant(id: number) {

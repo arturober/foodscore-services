@@ -11,6 +11,7 @@ import {
   UseGuards,
   Req,
   NotFoundException,
+  Put,
 } from '@nestjs/common';
 import { RestaurantsService } from './restaurants.service';
 import { InsertRestaurantDto } from './dto/insert-restaurant.dto';
@@ -38,10 +39,27 @@ export class RestaurantsController {
     return { restaurants };
   }
 
+  @Get('user/:id')
+  async getUserRestaurants(@Req() req: any, @Param('id', ParseIntPipe) id: number) {
+    const restaurants = await this.restService.getUserRestaurants(id, req.user.id);
+    return { restaurants };
+  }
+
   @Get(':id')
   async getRestaurant(@Req() req: any, @Param('id', ParseIntPipe) id: number) {
     try {
       const restaurant = await this.restService.getRestaurant(id, req.user.id);
+      return { restaurant };
+    } catch (e) {
+      throw new NotFoundException();
+    }
+  }
+
+  @Put(':id')
+  async updateRestaurant(@Req() req: any, @Param('id', ParseIntPipe) id: number,
+                         @Body(new ValidationPipe({ transform: true })) restDto: InsertRestaurantDto) {
+    try {
+      const restaurant = await this.restService.updateRestaurant(id, restDto, req.user.id);
       return { restaurant };
     } catch (e) {
       throw new NotFoundException();
