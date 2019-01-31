@@ -66,10 +66,11 @@ export class RestaurantsService {
         .getRawAndEntities();
 
         const restEnt: Restaurant = rest.entities[0];
-        (restEnt as any).mine = restEnt.creator.id === userId;
         (restEnt as any).commented = await this.comRepo.findOne({where: {user: userId, restaurant: restEnt.id}}) ? true : false;
         (restEnt as any).distance = rest.raw[0].distance;
         restEnt.creator = await this.usersService.getUser(+restEnt.creator);
+        (restEnt as any).mine = restEnt.creator.id === userId;
+
         return restEnt;
     }
 
