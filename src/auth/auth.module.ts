@@ -6,7 +6,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '../entities/user.entity';
 import { UsersModule } from '../users/users.module';
 import { IsUserAlreadyExistConstraint } from './validators/user-exists.validator';
-import { CommonsModule } from 'commons/commons.module';
+import { CommonsModule } from '../commons/commons.module';
 
 @Module({
   imports: [TypeOrmModule.forFeature([User]), UsersModule, CommonsModule],
