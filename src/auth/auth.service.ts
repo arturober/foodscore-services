@@ -9,7 +9,7 @@ import { RegisterUserDto } from './dto/register-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
 import { ImageService } from '../commons/image.service';
 import { OAuth2Client } from 'google-auth-library';
-import { UsersService } from 'users/users.service';
+import { UsersService } from '../users/users.service';
 import { LoginTokenDto } from './dto/login-token.dto';
 
 @Injectable()
