@@ -1,6 +1,6 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from 'entities/user.entity';
+import { User } from './entities/user.entity';
 import { Repository, DeepPartial } from 'typeorm';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
 import * as jwt from 'jsonwebtoken';

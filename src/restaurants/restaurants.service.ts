@@ -1,9 +1,9 @@
 import { Injectable, HttpException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Restaurant } from 'entities/restaurant.entity';
+import { Restaurant } from '../entities/restaurant.entity';
 import { Repository, SelectQueryBuilder } from 'typeorm';
 import { InsertRestaurantDto } from './dto/insert-restaurant.dto';
-import { Comment } from 'entities/comment.entity';
+import { Comment } from '../entities/comment.entity';
 import { ImageService } from 'commons/image.service';
 import { UsersService } from 'users/users.service';
 

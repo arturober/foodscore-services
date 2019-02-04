@@ -4,7 +4,6 @@ import { AppService } from './app.service';
 import { RestaurantsModule } from './restaurants/restaurants.module';
 import { UsersModule } from './users/users.module';
 import { TypeOrmModule, InjectRepository } from '@nestjs/typeorm';
-import { Restaurant } from 'entities/restaurant.entity';
 import { AuthModule } from './auth/auth.module';
 import { CommentsModule } from './comments/comments.module';
 import { CommonsModule } from './commons/commons.module';

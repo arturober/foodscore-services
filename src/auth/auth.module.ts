@@ -3,7 +3,7 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { JwtStrategy } from './jwt.strategy';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from 'entities/user.entity';
+import { User } from '../entities/user.entity';
 import { UsersModule } from 'users/users.module';
 import { IsUserAlreadyExistConstraint } from './validators/user-exists.validator';
 import { CommonsModule } from 'commons/commons.module';
