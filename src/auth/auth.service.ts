@@ -1,6 +1,6 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from './entities/user.entity';
+import { User } from '../entities/user.entity';
 import { Repository, DeepPartial } from 'typeorm';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
 import * as jwt from 'jsonwebtoken';
@@ -41,7 +41,7 @@ export class AuthService {
     }
 
     async login(userDto: LoginUserDto) {
-        const user = await this.userRepo.findOneOrFail({email: userDto.email, password: userDto.password});
+        const user = await this.userRepo.findOneOrFail({where: {email: userDto.email, password: userDto.password}});
         if (userDto.lat && userDto.lng) {
             user.lat = userDto.lat;
             user.lng = userDto.lng;
@@ -58,17 +58,17 @@ export class AuthService {
         });
         const payload = ticket.getPayload();
         const email = payload.email;
-        let user: DeepPartial<User> = await this.userService.getUserbyEmail(email);
+        let user = await this.userService.getUserbyEmail(email);
         const avatar = await this.imageService.downloadImage('users', payload.picture);
         if (!user) {
-            user = {
+            const user2 = {
                 email,
                 name: payload.name,
                 avatar,
                 lat: tokenDto.lat ? tokenDto.lat : 0,
                 lng: tokenDto.lng ? tokenDto.lng : 0,
             };
-            user = await this.userRepo.save(user);
+            user = await this.userRepo.insert(user2);
         } else if (tokenDto.lat && tokenDto.lng) {
             user.lat = tokenDto.lat;
             user.lng = tokenDto.lng;
