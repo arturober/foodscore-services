@@ -10,7 +10,16 @@ import { CommonsModule } from './commons/commons.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot(),
+    TypeOrmModule.forRoot({
+      type: 'mysql',
+      host: 'arturober.com',
+      port: 3306,
+      username: 'example',
+      password: 'example',
+      database: 'project1',
+      entities: [__dirname + '/entities/*.entity{.ts,.js}'],
+      synchronize: true,
+    }),
     RestaurantsModule,
     UsersModule,
     AuthModule,
