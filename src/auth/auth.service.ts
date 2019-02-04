@@ -68,7 +68,7 @@ export class AuthService {
                 lat: tokenDto.lat ? tokenDto.lat : 0,
                 lng: tokenDto.lng ? tokenDto.lng : 0,
             };
-            user = await this.userRepo.insert(user2);
+            user = await this.userRepo.save(user2);
         } else if (tokenDto.lat && tokenDto.lng) {
             user.lat = tokenDto.lat;
             user.lng = tokenDto.lng;
