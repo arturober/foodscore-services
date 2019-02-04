@@ -3,7 +3,7 @@ import { RestaurantsService } from './restaurants.service';
 import { RestaurantsController } from './restaurants.controller';
 import { Restaurant } from '../entities/restaurant.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { CommentsModule } from 'comments/comments.module';
+import { CommentsModule } from 'ments.module';
 import { Comment } from '../entities/comment.entity';
 import { CommonsModule } from 'commons/commons.module';
 import { UsersModule } from '../users/users.module';

@@ -16,8 +16,8 @@ import {
 import { RestaurantsService } from './restaurants.service';
 import { InsertRestaurantDto } from './dto/insert-restaurant.dto';
 import { AuthGuard } from '@nestjs/passport';
-import { CommentsService } from 'comments/comments.service';
-import { InsertCommentDto } from 'comments/dto/insert-comment.dto';
+import { CommentsService } from '../comments/comments.service';
+import { InsertCommentDto } from '../comments/dto/insert-comment.dto';
 
 @Controller('restaurants')
 @UseGuards(AuthGuard('jwt'))
