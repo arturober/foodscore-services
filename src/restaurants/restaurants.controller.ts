@@ -51,7 +51,7 @@ export class RestaurantsController {
       const restaurant = await this.restService.getRestaurant(id, req.user.id);
       return { restaurant };
     } catch (e) {
-      throw new NotFoundException();
+      throw new NotFoundException(e.message);
     }
   }
 
@@ -62,8 +62,7 @@ export class RestaurantsController {
       const restaurant = await this.restService.updateRestaurant(id, restDto, req.user.id);
       return { restaurant };
     } catch (e) {
-      console.log(e);
-      throw new NotFoundException();
+      throw new NotFoundException(e.message);
     }
   }
 
