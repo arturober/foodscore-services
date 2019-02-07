@@ -62,6 +62,7 @@ export class RestaurantsController {
       const restaurant = await this.restService.updateRestaurant(id, restDto, req.user.id);
       return { restaurant };
     } catch (e) {
+      console.log(e);
       throw new NotFoundException();
     }
   }
