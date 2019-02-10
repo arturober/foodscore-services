@@ -30,7 +30,7 @@ export class RestaurantsService {
             .getRawAndEntities();
         return rests.entities.map((r, i) => {
             (r as any).mine = +r.creator === userId;
-            (r as any).distance = rests.raw[i].distance;
+            (r as any).distance = rests.raw[i].distance || 0;
             delete r.creator;
             return r;
         });
@@ -67,7 +67,7 @@ export class RestaurantsService {
 
         const restEnt: Restaurant = rest.entities[0];
         (restEnt as any).commented = await this.comRepo.findOne({where: {user: userId, restaurant: restEnt.id}}) ? true : false;
-        (restEnt as any).distance = rest.raw[0].distance;
+        (restEnt as any).distance = rest.raw[0].distance || 0;
         restEnt.creator = await this.usersService.getUser(+restEnt.creator);
         (restEnt as any).mine = restEnt.creator.id === userId;
 
