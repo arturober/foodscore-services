@@ -5,7 +5,7 @@ import { User } from '../entities/user.entity';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
 import { UpdateAvatarDto } from './dto/update-avatar.dto';
-import { ImageService } from '../commons/image.service';
+import { ImageService } from '../commons/image/image.service';
 
 @Injectable()
 export class UsersService {

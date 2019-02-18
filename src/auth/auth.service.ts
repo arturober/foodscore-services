@@ -7,7 +7,7 @@ import * as jwt from 'jsonwebtoken';
 import * as request from 'request-promise';
 import { RegisterUserDto } from './dto/register-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
-import { ImageService } from '../commons/image.service';
+import { ImageService } from '../commons/image/image.service';
 import { OAuth2Client } from 'google-auth-library';
 import { UsersService } from '../users/users.service';
 import { LoginTokenDto } from './dto/login-token.dto';
@@ -47,6 +47,10 @@ export class AuthService {
             user.lng = userDto.lng;
             await this.userRepo.save(user);
         }
+        if (userDto.oneSignalId) {
+            user.oneSignalId = userDto.oneSignalId;
+            await this.userRepo.save(user);
+        }
         return this.createToken(user);
     }
 
@@ -73,6 +77,10 @@ export class AuthService {
         } else if (tokenDto.lat && tokenDto.lng) {
             user.lat = tokenDto.lat;
             user.lng = tokenDto.lng;
+            await this.userRepo.save(user);
+        }
+        if (tokenDto.oneSignalId) {
+            user.oneSignalId = tokenDto.oneSignalId;
             await this.userRepo.save(user);
         }
         return this.createToken(user as User);
@@ -114,6 +122,10 @@ export class AuthService {
         } else if (tokenDto.lat && tokenDto.lng) {
             user.lat = tokenDto.lat;
             user.lng = tokenDto.lng;
+            await this.userRepo.save(user);
+        }
+        if (tokenDto.oneSignalId) {
+            user.oneSignalId = tokenDto.oneSignalId;
             await this.userRepo.save(user);
         }
 

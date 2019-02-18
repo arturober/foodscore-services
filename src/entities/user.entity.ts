@@ -19,6 +19,9 @@ export class User {
     @Column({length: 100, default: 'img/profile.jpg'})
     avatar: string;
 
+    @Column({length: 150, nullable: true})
+    oneSignalId: string;
+
     @Column({type: 'decimal', default: 0, precision: 10, scale: 7})
     lat: number;
 

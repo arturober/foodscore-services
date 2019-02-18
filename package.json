@@ -34,6 +34,7 @@
     "image-downloader": "^3.4.2",
     "jsonwebtoken": "^8.3.0",
     "mysql": "^2.16.0",
+    "onesignal-node": "^2.0.1",
     "passport": "^0.4.0",
     "passport-jwt": "^4.0.0",
     "reflect-metadata": "^0.1.12",
@@ -41,7 +42,7 @@
     "request-promise": "^4.2.2",
     "rxjs": "^6.3.3",
     "typeorm": "^0.2.7",
-    "typescript": "^2.9.2"
+    "typescript": "^3.0.1"
   },
   "devDependencies": {
     "@nestjs/testing": "^5.3.8",

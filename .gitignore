@@ -91,3 +91,5 @@ img/users/*
 !img/users/README.md
 
 .directory
+
+dist/*

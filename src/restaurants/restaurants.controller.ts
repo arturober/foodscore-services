@@ -101,7 +101,7 @@ export class RestaurantsController {
     comDto.restaurant = restId;
     try {
       const comment = await this.commentsService.insertComment(comDto);
-      return { comment: await this.commentsService.getComment(comment.id) };
+      return { comment };
     } catch (e) {
       if (e.code === 'ER_DUP_ENTRY') {
         throw new HttpException('Only one comment allowed per user and restaurant', 400);

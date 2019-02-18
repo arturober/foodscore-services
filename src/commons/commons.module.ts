@@ -1,8 +1,9 @@
 import { Module } from '@nestjs/common';
-import { ImageService } from './image.service';
+import { ImageService } from './image/image.service';
+import { PushService } from './push/push/push.service';
 
 @Module({
-  providers: [ImageService],
-  exports: [ImageService],
+  providers: [ImageService, PushService],
+  exports: [ImageService, PushService],
 })
 export class CommonsModule {}

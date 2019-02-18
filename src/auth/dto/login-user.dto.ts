@@ -17,4 +17,8 @@ export class LoginUserDto {
     @IsNumber()
     @IsOptional()
     readonly lng;
+
+    @IsString()
+    @IsOptional()
+    readonly oneSignalId: string;
 }
