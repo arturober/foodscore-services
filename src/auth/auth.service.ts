@@ -45,11 +45,11 @@ export class AuthService {
         if (userDto.lat && userDto.lng) {
             user.lat = userDto.lat;
             user.lng = userDto.lng;
-            await this.userRepo.save(user);
+            await this.userRepo.update(user.id, {lat: userDto.lat, lng: userDto.lng});
         }
         if (userDto.oneSignalId) {
             user.oneSignalId = userDto.oneSignalId;
-            await this.userRepo.save(user);
+            await this.userRepo.update(user.id, {oneSignalId: userDto.oneSignalId});
         }
         return this.createToken(user);
     }
@@ -77,11 +77,11 @@ export class AuthService {
         } else if (tokenDto.lat && tokenDto.lng) {
             user.lat = tokenDto.lat;
             user.lng = tokenDto.lng;
-            await this.userRepo.save(user);
+            await this.userRepo.update(user.id, {lat: tokenDto.lat, lng: tokenDto.lng});
         }
         if (tokenDto.oneSignalId) {
             user.oneSignalId = tokenDto.oneSignalId;
-            await this.userRepo.save(user);
+            await this.userRepo.update(user.id, {oneSignalId: tokenDto.oneSignalId});
         }
         return this.createToken(user as User);
     }
@@ -122,11 +122,11 @@ export class AuthService {
         } else if (tokenDto.lat && tokenDto.lng) {
             user.lat = tokenDto.lat;
             user.lng = tokenDto.lng;
-            await this.userRepo.save(user);
+            await this.userRepo.update(user.id, {lat: tokenDto.lat, lng: tokenDto.lng});
         }
         if (tokenDto.oneSignalId) {
             user.oneSignalId = tokenDto.oneSignalId;
-            await this.userRepo.save(user);
+            await this.userRepo.update(user.id, {oneSignalId: tokenDto.oneSignalId});
         }
 
         return this.createToken(user as User);

@@ -93,3 +93,5 @@ img/users/*
 .directory
 
 dist/*
+
+package-lock.json
