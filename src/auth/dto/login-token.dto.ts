@@ -1,18 +1,19 @@
-import { IsString, IsNumber, IsOptional } from 'class-validator';
+import { IsString, IsOptional, IsNotEmpty, IsNumber } from 'class-validator';
 
 export class LoginTokenDto {
-    @IsString()
-    readonly token: string;
+  @IsString()
+  @IsNotEmpty()
+  readonly token: string;
 
-    @IsNumber()
-    @IsOptional()
-    readonly lat;
+  @IsString()
+  @IsOptional()
+  readonly firebaseToken: string;
 
-    @IsNumber()
-    @IsOptional()
-    readonly lng;
+  @IsNumber()
+  @IsOptional()
+  lat?: number;
 
-    @IsString()
-    @IsOptional()
-    readonly oneSignalId: string;
+  @IsNumber()
+  @IsOptional()
+  lng?: number;
 }

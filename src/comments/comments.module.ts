@@ -1,16 +1,14 @@
+import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { Module } from '@nestjs/common';
+import { Comment } from 'src/entities/Comment';
+import { Restaurant } from 'src/entities/Restaurant';
 import { CommentsController } from './comments.controller';
 import { CommentsService } from './comments.service';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { Comment } from '../entities/comment.entity';
-import { Restaurant } from '../entities/restaurant.entity';
-import { User } from '../entities/user.entity';
-import { CommonsModule } from '../commons/commons.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Comment, Restaurant, User]), CommonsModule],
+  imports: [MikroOrmModule.forFeature([Comment, Restaurant])],
   controllers: [CommentsController],
   providers: [CommentsService],
-  exports: [CommentsService]
+  exports: [CommentsService],
 })
 export class CommentsModule {}

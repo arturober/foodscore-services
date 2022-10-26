@@ -1,15 +1,11 @@
-import { IsNumber, IsInt, IsString, Min, Max } from "class-validator";
+import { IsNumber, IsInt, IsString, Min, Max } from 'class-validator';
 
 export class InsertCommentDto {
-    @IsInt()
-    @Min(1)
-    @Max(5)
-    readonly stars: number;
+  @IsInt()
+  @Min(1)
+  @Max(5)
+  readonly stars: number;
 
-    @IsString()
-    readonly text: string;
-
-    restaurant = null;
-
-    user = null;
+  @IsString()
+  readonly text: string;
 }

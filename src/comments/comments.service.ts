@@ -1,36 +1,46 @@
-import { Injectable } from '@nestjs/common';
+import { EntityRepository } from '@mikro-orm/mariadb';
+import { InjectRepository } from '@mikro-orm/nestjs';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { Comment } from 'src/entities/Comment';
+import { Restaurant } from 'src/entities/Restaurant';
+import { User } from 'src/entities/User';
 import { InsertCommentDto } from './dto/insert-comment.dto';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Comment } from '../entities/comment.entity';
-import { Restaurant } from '../entities/restaurant.entity';
-import { User } from '../entities/user.entity';
-import { PushService } from '../commons/push/push/push.service';
 
 @Injectable()
 export class CommentsService {
-    constructor(
-        @InjectRepository(Comment) private readonly comRepo: Repository<Comment>,
-        @InjectRepository(Restaurant) private readonly restRepo: Repository<Restaurant>,
-        @InjectRepository(User) private readonly userRepo: Repository<User>,
-        private readonly pushService: PushService,
-    ) {}
+  constructor(
+    @InjectRepository(Comment)
+    private readonly commentRepo: EntityRepository<Comment>,
+    @InjectRepository(Restaurant)
+    private readonly restRepo: EntityRepository<Restaurant>,
+  ) {}
 
-    async insertComment(comment: InsertCommentDto): Promise<any> {
-        const result = await this.comRepo.insert(comment);
-        const rest = await this.restRepo.findOne(comment.restaurant, {loadRelationIds: true});
-        const user = await this.userRepo.findOne(rest.creator);
-        if (user.oneSignalId) {
-            this.pushService.sendMessage(user.oneSignalId, `New comment (${rest.name})`, comment.text, {restId: '' + rest.id});
-        }
-        return await this.comRepo.findOne(result.identifiers[0], {relations: ['user']});
+  async insertComment(
+    commentDto: InsertCommentDto,
+    authUser: User,
+    restId: number,
+  ): Promise<Comment> {
+    const comment = Comment.fromCreateDto(commentDto);
+    comment.user = authUser;
+    comment.restaurant = await this.restRepo.findOne(restId);
+    if (!comment.restaurant) {
+      throw new NotFoundException({
+        status: 404,
+        error: 'Restaurant not found',
+      });
     }
+    await this.commentRepo.persistAndFlush(comment);
+    return comment;
+  }
 
-    getComment(commentId: number): Promise<Comment> {
-        return this.comRepo.findOne(commentId, {relations: ['user']});
-    }
+  getComment(commentId: number): Promise<Comment> {
+    return this.commentRepo.findOne(commentId, { populate: ['user'] });
+  }
 
-    getComments(restId: number): Promise<Comment[]> {
-        return this.comRepo.find({where: {restaurant: restId}, relations: ['user']});
-    }
+  getComments(restId: number): Promise<Comment[]> {
+    return this.commentRepo.find(
+      { restaurant: restId },
+      { populate: ['user'] },
+    );
+  }
 }

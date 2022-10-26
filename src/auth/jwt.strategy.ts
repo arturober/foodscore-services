@@ -3,25 +3,27 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Injectable, UnauthorizedException, Inject } from '@nestjs/common';
 import { JwtPayload } from './interfaces/jwt-payload.interface';
 import { UsersService } from '../users/users.service';
+import { User } from 'src/entities/User';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     private readonly userService: UsersService,
-    @Inject('JWT_KEY') jwt_key: string) {
+    @Inject('JWT_KEY') jwtKey: string
+  ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      secretOrKey: jwt_key,
+      ignoreExpiration: false,
+      secretOrKey: jwtKey,
     });
   }
 
-  // tslint:disable-next-line:ban-types
-  async validate(payload: JwtPayload, done: Function) {
+  async validate(payload: JwtPayload): Promise<User> {
     try {
       const user = await this.userService.getUser(payload.id);
-      done(null, user);
+      return user;
     } catch {
-      return done(new UnauthorizedException(), false);
+      throw new UnauthorizedException();
     }
   }
 }

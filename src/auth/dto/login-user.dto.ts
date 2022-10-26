@@ -1,24 +1,35 @@
-import { IsEmail, IsString, IsNumber, IsOptional } from 'class-validator';
+import {
+  IsEmail,
+  IsString,
+  IsNumber,
+  IsOptional,
+  IsNotEmpty,
+  Length,
+} from 'class-validator';
 import * as crypto from 'crypto';
 import { Transform } from 'class-transformer';
 
 export class LoginUserDto {
-    @IsEmail()
-    readonly email: string;
+  @IsEmail()
+  @IsNotEmpty()
+  readonly email: string;
 
-    @IsString()
-    @Transform(p => crypto.createHash('sha256').update(p).digest('base64'))
-    readonly password: string;
+  @IsString()
+  @IsNotEmpty()
+  @Transform((p) =>
+    crypto.createHash('sha256').update(p.value, 'utf-8').digest('base64')
+  )
+  readonly password: string;
 
-    @IsNumber()
-    @IsOptional()
-    readonly lat;
+  @IsString()
+  @IsOptional()
+  readonly firebaseToken: string;
 
-    @IsNumber()
-    @IsOptional()
-    readonly lng;
+  @IsNumber()
+  @IsOptional()
+  lat?: number;
 
-    @IsString()
-    @IsOptional()
-    readonly oneSignalId: string;
+  @IsNumber()
+  @IsOptional()
+  lng?: number;
 }

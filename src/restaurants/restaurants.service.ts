@@ -1,98 +1,93 @@
-import { Injectable, HttpException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Restaurant } from '../entities/restaurant.entity';
-import { Repository, SelectQueryBuilder } from 'typeorm';
-import { InsertRestaurantDto } from './dto/insert-restaurant.dto';
-import { Comment } from '../entities/comment.entity';
-import { ImageService } from '../commons/image/image.service';
-import { UsersService } from '../users/users.service';
+import { EntityRepository, SelectQueryBuilder } from '@mikro-orm/mariadb';
+import { InjectRepository } from '@mikro-orm/nestjs';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import { ImageService } from 'src/commons/image/image.service';
+import { Restaurant } from 'src/entities/Restaurant';
+import { User } from 'src/entities/User';
+import { CreateRestaurantDto } from './dto/create-restaurant.dto';
 
 @Injectable()
 export class RestaurantsService {
-    constructor(
-        @InjectRepository(Restaurant) private readonly restRepo: Repository<Restaurant>,
-        @InjectRepository(Comment) private readonly comRepo: Repository<Comment>,
-        private readonly imageService: ImageService,
-        private readonly usersService: UsersService,
-    ) {}
+  constructor(
+    @InjectRepository(Restaurant)
+    private readonly restaurantRepo: EntityRepository<Restaurant>,
+    private readonly imageService: ImageService,
+  ) {}
 
-    private async getRestaurantsSelect(userId: number) {
-        const user = await this.usersService.getUser(userId);
-        return this.restRepo.createQueryBuilder('restaurant')
-            .addSelect('haversine(restaurant.lat, restaurant.lng, :userLat, :userLng)', 'distance')
-            .setParameter('userLat', user.lat)
-            .setParameter('userLng', user.lng);
+  private createRestaurantSelect(
+    authUser: User,
+    includeCreator = true,
+    includeCommented = true,
+  ): SelectQueryBuilder<Restaurant> {
+    let builder = this.restaurantRepo
+      .createQueryBuilder('r')
+      .select('*')
+      .addSelect(
+        `haversine(r.lat, r.lng, ${authUser.lat}, ${authUser.lng}) AS distance`,
+      )
+      .orderBy({ distance: 'ASC' });
+
+    if (includeCommented) {
+      builder = builder.addSelect(
+        `EXISTS (SELECT id FROM comment WHERE user = ${authUser.id} AND restaurant = r.id) AS commented`,
+      );
     }
 
-    private async getRestaurants(userId: number, selectQuery: SelectQueryBuilder<Restaurant>): Promise<Restaurant[]> {
-        const rests = await selectQuery.loadRelationIdAndMap('restaurant.creator', 'restaurant.creator')
-            .orderBy('distance')
-            .getRawAndEntities();
-        return rests.entities.map((r, i) => {
-            (r as any).mine = +r.creator === userId;
-            (r as any).distance = rests.raw[i].distance || 0;
-            delete r.creator;
-            return r;
-        });
+    return includeCreator
+      ? builder.leftJoinAndSelect('r.creator', 'c')
+      : builder;
+  }
+
+  findAll(authUser: User): Promise<Restaurant[]> {
+    return this.createRestaurantSelect(authUser, false, false).getResultList();
+  }
+
+  async findOne(id: number, authUser: User): Promise<Restaurant> {
+    const rest = await this.createRestaurantSelect(authUser)
+      .where({ id })
+      .getSingleResult();
+    if (!rest) {
+      throw new NotFoundException({
+        status: 404,
+        error: 'Restaurant not found',
+      });
     }
+    return rest;
+  }
 
-    async getAllRestaurants(userId: number): Promise<Restaurant[]> {
-        const select = await this.getRestaurantsSelect(userId);
-        return await this.getRestaurants(userId, select);
+  findByUser(userId: number, authUser: User) {
+    return this.createRestaurantSelect(authUser)
+      .where({ creator: { id: userId } })
+      .getResultList();
+  }
+
+  async create(
+    createDto: CreateRestaurantDto,
+    authUser: User,
+  ): Promise<Restaurant> {
+    const imageUrl = await this.imageService.saveImage(
+      'restaurants',
+      createDto.image,
+    );
+    const restaurant = Restaurant.fromCreateDto(createDto);
+    restaurant.image = imageUrl;
+    restaurant.creator = authUser;
+
+    await this.restaurantRepo.persistAndFlush(restaurant);
+    return restaurant;
+  }
+
+  async remove(id: number, authUser: User): Promise<void> {
+    const rest = await this.findOne(id, authUser);
+    if (rest.creator.id !== authUser.id) {
+      throw new ForbiddenException(
+        "This restaurant doesn't belong to you. You can't delete it",
+      );
     }
-
-    async getMyRestaurants(userId: number) {
-        const select = (await this.getRestaurantsSelect(userId))
-            .where('restaurant.creator = :id', { id : userId });
-        return this.getRestaurants(userId, select);
-    }
-
-    async getUserRestaurants(userId: number, loggedId: number) {
-        const select = (await this.getRestaurantsSelect(userId))
-            .where('restaurant.creator = :id', { id : userId });
-        return this.getRestaurants(loggedId, select);
-    }
-
-    async getRestaurant(restId: number, userId: number) {
-        const user = await this.usersService.getUser(userId);
-        let rest = null;
-        rest = await this.restRepo.createQueryBuilder('restaurant')
-        .leftJoinAndSelect('restaurant.creator', 'user')
-        .where('restaurant.id = ' + restId)
-        .addSelect('haversine(restaurant.lat, restaurant.lng, :userLat, :userLng)', 'distance')
-        .setParameter('userLat', user.lat)
-        .setParameter('userLng', user.lng)
-        .loadRelationIdAndMap('restaurant.creator', 'restaurant.creator')
-        .getRawAndEntities();
-
-        const restEnt: Restaurant = rest.entities[0];
-        (restEnt as any).commented = await this.comRepo.findOne({where: {user: userId, restaurant: restEnt.id}}) ? true : false;
-        (restEnt as any).distance = rest.raw[0].distance || 0;
-        restEnt.creator = await this.usersService.getUser(+restEnt.creator);
-        (restEnt as any).mine = restEnt.creator.id === userId;
-
-        return restEnt;
-    }
-
-    async insertRestaurant(restaurant: InsertRestaurantDto) {
-        restaurant.image = await this.imageService.saveImage('restaurants', restaurant.image);
-        restaurant.cuisine = restaurant.cuisine.map(c => c.trim());
-        return await this.restRepo.save(restaurant);
-    }
-
-    async updateRestaurant(id: number, restaurant: InsertRestaurantDto, userId: number) {
-        if (!restaurant.image.includes('restaurants')) {
-            restaurant.image = await this.imageService.saveImage('restaurants', restaurant.image);
-        } else {
-            restaurant.image = restaurant.image.substr(restaurant.image.indexOf('img/'));
-        }
-        restaurant.cuisine = restaurant.cuisine.map(c => c.trim());
-        delete restaurant.creator;
-        await this.restRepo.update(id, restaurant);
-        return await this.getRestaurant(id, userId);
-    }
-
-    deleteRestaurant(id: number) {
-        return this.restRepo.delete(id);
-    }
+    await this.restaurantRepo.nativeDelete(id);
+  }
 }

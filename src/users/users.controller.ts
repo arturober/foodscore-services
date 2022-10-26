@@ -4,62 +4,89 @@ import {
   Req,
   Param,
   ParseIntPipe,
-  UseGuards,
   NotFoundException,
   Put,
   Body,
   ValidationPipe,
+  BadRequestException,
+  UseInterceptors,
+  ClassSerializerInterceptor,
+  HttpCode,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { AuthGuard } from '@nestjs/passport';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { UpdatePasswordDto } from './dto/update-password.dto';
-import { UpdateAvatarDto } from './dto/update-avatar.dto';
+import { UpdatePhotoDto } from './dto/update-photo.dto';
+import { AuthUser } from 'src/auth/decorators/user.decorator';
+import { User } from 'src/entities/User';
+import { UserResponseInterceptor } from './interceptors/user-response.interceptor';
+import { Request } from 'express';
+import { UserListInterceptor } from './interceptors/user-list.interceptor';
 
 @Controller('users')
-@UseGuards(AuthGuard('jwt'))
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get('me')
-  getCurrentUser(@Req() req) {
-    const user = req.user;
-    user.me = true;
-    return { user };
+  @UseInterceptors(UserResponseInterceptor, ClassSerializerInterceptor)
+  getCurrentUser(@AuthUser() authUser: User): User {
+    authUser.me = true;
+    return authUser;
+  }
+
+  @Get('name/:name')
+  @UseInterceptors(UserListInterceptor, ClassSerializerInterceptor)
+  async getUsersByName(
+    @AuthUser() authUser: User,
+    @Param('name') name: string,
+  ): Promise<User[]> {
+    const users = await this.usersService.getUsersByName(name);
+    return users;
   }
 
   @Get(':id')
-  async getUser(@Req() req, @Param('id', ParseIntPipe) id: number) {
+  @UseInterceptors(UserResponseInterceptor, ClassSerializerInterceptor)
+  async getUser(
+    @AuthUser() authUser: User,
+    @Param('id', ParseIntPipe) id: number,
+  ): Promise<User> {
     try {
       const user = await this.usersService.getUser(id);
-      (user as any).me = user.id === req.user.id;
-      return { user };
+      user.me = id === authUser.id;
+      return user;
     } catch (e) {
       throw new NotFoundException();
     }
   }
 
   @Put('me')
+  @HttpCode(204)
   async updateUserInfo(
-    @Req() req,
-    @Body(new ValidationPipe({ transform: true })) userDto: UpdateUserDto,
-  ) {
+    @AuthUser() authUser: User,
+    @Body(new ValidationPipe({ transform: true, whitelist: true }))
+    userDto: UpdateUserDto,
+  ): Promise<void> {
     try {
-      await this.usersService.updateUserInfo(req.user.id, userDto);
-      return { ok: true };
+      await this.usersService.updateUserInfo(authUser.id, userDto);
     } catch (e) {
-      throw new NotFoundException();
+      console.log(e);
+      if (e.code === 'ER_DUP_ENTRY') {
+        throw new BadRequestException('This email is already registered');
+      } else {
+        throw new NotFoundException();
+      }
     }
   }
 
   @Put('me/password')
+  @HttpCode(204)
   async updatePassword(
-    @Req() req,
-    @Body(new ValidationPipe({ transform: true })) passDto: UpdatePasswordDto,
-  ) {
+    @AuthUser() authUser: User,
+    @Body(new ValidationPipe({ transform: true, whitelist: true }))
+    passDto: UpdatePasswordDto,
+  ): Promise<void> {
     try {
-      await this.usersService.updatePassword(req.user.id, passDto);
-      return { ok: true };
+      await this.usersService.updatePassword(authUser.id, passDto);
     } catch (e) {
       throw new NotFoundException();
     }
@@ -67,15 +94,14 @@ export class UsersController {
 
   @Put('me/avatar')
   async updateAvatar(
-    @Req() req,
-    @Body(new ValidationPipe({ transform: true })) avatarDto: UpdateAvatarDto,
+    @AuthUser() authUser: User,
+    @Body(new ValidationPipe({ transform: true, whitelist: true }))
+    photoDto: UpdatePhotoDto,
+    @Req() req: Request,
   ) {
     try {
-      const avatar = await this.usersService.updateAvatar(
-        req.user.id,
-        avatarDto,
-      );
-      return { avatar };
+      const avatar = await this.usersService.updatePhoto(authUser.id, photoDto);
+      return { avatar: req.protocol + '://' + req.headers.host + '/' + avatar };
     } catch (e) {
       throw new NotFoundException();
     }
