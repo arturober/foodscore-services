@@ -17,6 +17,8 @@ import { InsertCommentDto } from 'src/comments/dto/insert-comment.dto';
 import { Restaurant } from 'src/entities/Restaurant';
 import { User } from 'src/entities/User';
 import { CreateRestaurantDto } from './dto/create-restaurant.dto';
+import { CommentListInterceptor } from './interceptors/comment-list.interceptor';
+import { CommentSingleInterceptor } from './interceptors/comment-single.interceptor';
 import { RestaurantListInterceptor } from './interceptors/restaurant-list.interceptor';
 import { RestaurantSingleInterceptor } from './interceptors/restaurant-single.interceptor';
 import { RestaurantsService } from './restaurants.service';
@@ -78,11 +80,13 @@ export class RestaurantsController {
   }
 
   @Get(':id/comments')
+  @UseInterceptors(CommentListInterceptor)
   async getComments(@Param('id', ParseIntPipe) restId: number) {
-    return { comments: await this.commentsService.getComments(restId) };
+    return this.commentsService.getComments(restId);
   }
 
   @Post(':id/comments')
+  @UseInterceptors(CommentSingleInterceptor)
   async postComment(
     @AuthUser() authUser: User,
     @Param('id', ParseIntPipe) restId: number,
@@ -94,7 +98,7 @@ export class RestaurantsController {
         authUser,
         restId,
       );
-      return { comment };
+      return comment;
     } catch (e) {
       console.log(e);
       if (e.code === 'ER_DUP_ENTRY') {
@@ -103,7 +107,7 @@ export class RestaurantsController {
           400,
         );
       } else {
-        throw new HttpException('Unknown error', 500);
+        throw e;
       }
     }
   }

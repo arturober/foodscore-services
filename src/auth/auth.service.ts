@@ -23,7 +23,7 @@ export class AuthService {
     @Inject('GOOGLE_ID') private googleId: string,
     @InjectRepository(User) private readonly userRepo: EntityRepository<User>,
     private readonly imageService: ImageService,
-    private readonly usersService: UsersService
+    private readonly usersService: UsersService,
   ) {}
 
   private createToken(user: User): TokenResponse {
@@ -69,7 +69,7 @@ export class AuthService {
     if (!user) {
       const avatar = await this.imageService.downloadImage(
         'users',
-        payload.picture
+        payload.picture,
       );
       const user2: EntityData<User> = {
         email,

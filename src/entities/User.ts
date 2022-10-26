@@ -1,5 +1,5 @@
 import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
-import { Exclude } from 'class-transformer';
+import { Exclude, serialize } from 'class-transformer';
 
 @Entity()
 export class User {
@@ -12,7 +12,7 @@ export class User {
   @Property({ length: 250, nullable: false })
   email!: string;
 
-  @Property({ length: 100, nullable: false })
+  @Property({ length: 100, nullable: false, hidden: true })
   @Exclude({ toPlainOnly: true })
   password?: string;
 
@@ -25,7 +25,7 @@ export class User {
   @Property({ columnType: 'double', nullable: false })
   lng!: number;
 
-  @Property({ length: 200, nullable: true })
+  @Property({ length: 200, nullable: true, hidden: true })
   @Exclude({ toPlainOnly: true })
   firebaseToken?: string;
 

@@ -24,26 +24,34 @@
   <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
   [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
-# Servicios web applicación FoodScore
+- [1. Servicios web applicación FoodScore](#1-servicios-web-applicación-foodscore)
+  - [1.1. Instalación de los servicios](#11-instalación-de-los-servicios)
+    - [1.1.1. Probando los servicios](#111-probando-los-servicios)
+  - [1.2. Servicios web - Colecciones](#12-servicios-web---colecciones)
+    - [1.2.1. Colección /auth](#121-colección-auth)
+    - [1.2.2. Colección /restaurants](#122-colección-restaurants)
+    - [1.2.3. Colección /users](#123-colección-users)
+
+# 1. Servicios web applicación FoodScore
 
 Servicios web para los proyectos de la asignatura de entorno cliente. 
 
-### Instalación de los servicios
+## 1.1. Instalación de los servicios
 
-Importar la base de datos (directorio SQL). Configurar el archivo **ormconfig.json** con el servidor (host), usuario, password, y nombre de la base de datos. Ejemplo:
+Importar la base de datos (directorio SQL). Configurar el archivo **mirko-ormconfig.json** con el servidor (host), usuario, password, y nombre de la base de datos. Ejemplo:
 
-```json
-{
-  "type": "mysql",
-  "host": "localhost",
-  "port": 3306,
-  "username": "user",
-  "password": "pass",
-  "database": "project1",
-  "entities": ["src/entities/**.entity{.ts,.js}"],
-  "synchronize": true,
-  "logging": false
-}
+```typescript
+export default {
+  entities: ['dist/entities'], // compiled JS files
+  entitiesTs: ['src/entities'],
+  dbName: 'foodscore',
+  type: 'mariadb', // one of `mongo` | `mysql` | `mariadb` | `postgresql` | `sqlite`
+  user: 'root',
+  password: '',
+  port: 3306,
+  host: 'localhost',
+  debug: true,
+} as ConnectionOptions;
 ```
 
 A continuación, instalamos los paquetes necesarios con NPM:
@@ -52,20 +60,17 @@ A continuación, instalamos los paquetes necesarios con NPM:
 $ npm install
 ```
 
-### Probando los servicios
+### 1.1.1. Probando los servicios
 
 Ejecutamos los servicios web con el siguiente script:
 
 ```bash
-# development
-$ npm run start
+npm start
 ```
 
 En el directorio Postman (raíz del proyecto) hay una colección de Postman para importar y probar.
 
-También (aún no está completo) se pueden consultar la descripción de los servicios y probarlos en la dirección **http://localhost:3000/api**.
-
-## Servicios web - Colecciones
+## 1.2. Servicios web - Colecciones
 
 Todos los servicios devuelven un resultado en formato JSON. Cuando no se pueda realizar una operación, devolverán un código de error HTTP junto a un objeto JSON con la descripción del mismo.
 
@@ -75,13 +80,13 @@ Todas las colecciones, excepto **/auth** *(/auth/validate sí lo requiere)*, req
 Authorization: Bearer auth_token
 ```
 
-### Colección /auth
+### 1.2.1. Colección /auth
 
 * **POST /auth/login**
 
 El servicio comprueba si un usuario y contraseña son correctos, devolviendo un token de autenticación (JWT) si todo va bien. Opcionalmente se puede enviar la posición del usuario para que la actualice.
 
-Ejemplo de **petición** (_lat_ y _lng_ son opcionales):
+Ejemplo de datos en la **petición** (_lat_ y _lng_ son opcionales):
 
 ```json
 {
@@ -103,13 +108,12 @@ En caso de error en el login (usuario y contraseña no válidos), se devolverá 
 
 ```json
 {
-    "statusCode": 401,
-    "error": "Unauthorized",
-    "message": "Email or password incorrect"
+    "status": 401,
+    "error": "Email or password incorrect"
 }
 ```
 
-* **POST /auth/google**
+<!-- * **POST /auth/google**
 
 Este servicio recibe el campo **id_token** que devuelve la identificación mediante Google en el cliente. Lo valida y comprueba el correo en la base de datos. Si el correo existe funciona como un login normal, y si no existe registra al usuario (a partir de los datos obtenidos de Google) en la base de datos. Devuelve un token de autenticación válido para el servidor (como el login).
 
@@ -154,13 +158,13 @@ Ejemplo de respuesta:
     "accessToken": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE0ODU5MDA1MzgsImlkIjoiMSIsIm5hbWUiOiJQcnVlYmEiLCJlbWFpbCI6InBydWViYUBjb3JyZW8uZXMifQ.vf7hwA3gceCDvOCa9RoWxR9cJ5mARnbAs6Nv9VBlPdc"
 }
 
-https://lorenstewart.me/2017/03/12/using-node-js-to-interact-with-facebooks-graph-api/
+https://lorenstewart.me/2017/03/12/using-node-js-to-interact-with-facebooks-graph-api/ -->
 
 * **POST /auth/register**
 
 Este servicio recibe los datos de un usuario y lo registra en la base de datos.
 
-Ejemplo de **petición** (_lat_ y _lng_ son opcionales):
+Ejemplo de **petición**:
 
 ```json
 {
@@ -175,18 +179,11 @@ Ejemplo de **petición** (_lat_ y _lng_ son opcionales):
 
 * **GET /auth/validate**
 
-Este servicio simplemente comprueba que el token de autenticación que se envía en la cabecera Authorization es correcto (y se ha enviado), devolviendo una respuesta como esta si está todo correcto:
+Este servicio simplemente comprueba que el token de autenticación que se envía en la cabecera Authorization es correcto (y se ha enviado), devolviendo una respuesta vacía (con el código 204) si está todo correcto.
 
-```json
-{
-    "ok": true
-}
-```
+O un código de error 401 (Not Authorized) si no es válido.
 
-O un código 401 (Not Authorized) si no es válido.
-
-
-### Colección /restaurants
+### 1.2.2. Colección /restaurants
 
 Todos los servicios de esta colección requieren del token de autenticación.
 
@@ -194,33 +191,31 @@ Todos los servicios de esta colección requieren del token de autenticación.
 
 Devuelve todos los restaurantes, ordenados por distancia respecto al usuario actual. El objeto devuelto tendrá un array con dichos restaurantes. Además de los datos del restaurante almacenado, devolverá la puntuación media del mismo (*stars*), la distancia del usuario al restaurante en km (*distance*), y si el restaurante pertenece al usuario (*mine*).
 
-Los días que abre el restaurante y el tipo de cocina se almacenan en la base de datos como cadena de caracteres, con los elementos separados por coma, pero el servicio los devuelve como array.
+Los días que abre el restaurante se almacena en la base de datos como cadena de caracteres (separados por coma), pero el servicio los devuelve como array.
 
 ```json
 {
     "restaurants": [
         {
-            "id": 19,
+            "id": 211,
             "name": "Restaurant",
             "description": "Description",
             "daysOpen": [
-                "3",
+                "1",
                 "4",
                 "5",
-                "6",
-                "0"
+                "6"
             ],
-            "phone": "234543654",
-            "image": "img/restaurants/1540120779126.jpg",
-            "address": "Calle Cuba, San Vicente del Raspeig",
-            "cuisine": [
-                "Nothing"
-            ],
-            "stars": "4.00",
-            "lat": "38.3920720",
-            "lng": "-0.5145030",
-            "mine": false,
-            "distance": 91.05379486083984
+            "phone": "934234512",
+            "image": "http://localhost:3000/img/restaurants/1666771960364.jpg",
+            "cuisine": "Italian",
+            "address": "Some street",
+            "lat": 39.2345235,
+            "lng": -1.4235,
+            "stars": 0,
+            "creator": 157,
+            "distance": 211.95602416992188,
+            "mine": false
         },
         ...
     ]
@@ -239,43 +234,42 @@ Igual que el servicio **/restaurants** pero sólo devuelve los restaurantes del 
 
 Devuelve la información del restaurante cuya id recibe por parámetro en la url. En caso de no existir, devolverá un código de error 404.
 
-Además de la información que devuelve cuando solicitamos varios restaurantes (servicios anteriores), también devolverá información sobre el usuario creador del mismo.
+Además de la información que devuelve cuando solicitamos varios restaurantes (servicios anteriores), también devolverá información sobre el usuario creador del mismo y si el usuario actual ha comentado y puntuado ya el restaurante (_commented_).
 
 Ejemplo de llamada a **/restaurants/19**.
 
 ```json
 {
     "restaurant": {
-        "id": 19,
+        "id": 211,
         "name": "Restaurant",
         "description": "Description",
         "daysOpen": [
-            "3",
+            "1",
             "4",
             "5",
-            "6",
-            "0"
+            "6"
         ],
-        "phone": "234543654",
-        "image": "img/restaurants/1540120779126.jpg",
-        "address": "Calle Cuba, San Vicente del Raspeig",
-        "cuisine": [
-            "Nothing"
-        ],
-        "stars": "4.00",
-        "lat": "38.3920720",
-        "lng": "-0.5145030",
+        "phone": "934234512",
+        "image": "http://SERVIDOR/img/restaurants/1666771960364.jpg",
+        "cuisine": "Italian",
+        "address": "Some street",
+        "lat": 39.2345235,
+        "lng": -1.4235,
+        "stars": 0,
         "creator": {
-            "id": 25,
-            "name": "Peter Griffin",
-            "email": "p@p.es",
-            "avatar": "img/users/1540121477498.jpg",
-            "lat": "38.3471226",
-            "lng": "-0.4974451"
+            "id": 157,
+            "name": "Tomtom",
+            "email": "tom11@email.com",
+            "password": "A6xnQhbz4Vx2HuGl4lXwZ5U2I8iziLRFnhP5eNfIRvQ=",
+            "avatar": "http://SERVIDOR/img/users/1666648110350.jpg",
+            "lat": 37.423553,
+            "lng": -0.654657,
+            "firebaseToken": null
         },
-        "mine": false,
+        "distance": 211.95602416992188,
         "commented": false,
-        "distance": 91.05379486083984
+        "mine": false
     }
 }
 ```
@@ -303,7 +297,7 @@ El servicio devolverá, si todo ha ido bien y se ha insertado el restaurante, el
 ```json
 {
     "restaurant": {
-        "creator": 27,
+        "id": 212,
         "name": "Restaurant",
         "description": "Description",
         "daysOpen": [
@@ -312,16 +306,24 @@ El servicio devolverá, si todo ha ido bien y se ha insertado el restaurante, el
             "5",
             "6"
         ],
-        "cuisine": [
-            "Italian"
-        ],
         "phone": "934234512",
+        "image": "http://SERVIDOR/img/restaurants/1666773950957.jpg",
+        "cuisine": "Italian",
         "address": "Some street",
-        "lat": "39.2345235",
-        "lng": "-1.4235000",
-        "image": "img/restaurants/1545563381872.jpg",
-        "id": 34,
-        "stars": "0.00"
+        "lat": 39.2345235,
+        "lng": -1.4235,
+        "creator": {
+            "id": 158,
+            "name": "Tom",
+            "email": "tom6@email.com",
+            "password": "A6xnQhbz4Vx2HuGl4lXwZ5U2I8iziLRFnhP5eNfIRvQ=",
+            "avatar": "http://SERVIDOR/img/users/1666771951144.jpg",
+            "lat": 37.423553,
+            "lng": -0.654657,
+            "firebaseToken": null
+        },
+        "stars": 0,
+        "mine": true
     }
 }
 ```
@@ -336,15 +338,7 @@ Devuelve, si todo sale bien, el restaurante con la información modificada.
 
 * **DELETE /restaurants/:id**
 
-Este servicio borra un restaurante de la base de datos y devuelve la id del restaurante eliminado, o un error 404 si el restaurante a borrar no existe. Si intentamos borrar un restaurante que no sea nuestro, debería devolver un código 401 (not authorized).
-
-Ejemplo de respuesta a la llamada **/restaurants/34**
-
-```json
-{
-    "id": 34
-}
-```
+Este servicio borra un restaurante de la base de datos y devuelve una respuesta vacía (código 204) si todo ha ido bien, o un error 404 si el restaurante a borrar no existe. Si intentamos borrar un restaurante que no sea nuestro, debería devolver un código 401 (not authorized).
 
 * **GET /restaurants/:id/comments**
 
@@ -357,12 +351,12 @@ Devuelve un objeto que contiene un array con todos los comentarios que han reali
             "id": 21,
             "stars": 4,
             "text": "Good food",
-            "date": "2018-10-21T11:22:33.467Z",
+            "date": "2020-06-02 11:13:04.703753",
             "user": {
                 "id": 25,
                 "name": "Peter Griffin",
                 "email": "p@p.es",
-                "avatar": "img/users/1540121477498.jpg",
+                "avatar": "http://SERVIDOR/img/users/1540121477498.jpg",
                 "lat": "38.3471226",
                 "lng": "-0.4974451"
             }
@@ -402,20 +396,20 @@ La respuesta será la información del comentario insertado en la base de datos:
         "id": 38,
         "stars": 4,
         "text": "Good restaurant",
-        "date": "2018-12-23T11:35:07.204Z",
+        "date": "2022-12-23T11:35:07.204Z",
         "user": {
-            "id": 27,
-            "name": "Tom",
-            "email": "tom2@email.com",
-            "avatar": "img\\users\\1541009537495.jpg",
-            "lat": "37.8235530",
-            "lng": "-1.2654570"
+            "id": 25,
+            "name": "Peter Griffin",
+            "email": "p@p.es",
+            "avatar": "http://SERVIDOR/img/users/1540121477498.jpg",
+            "lat": "38.3471226",
+            "lng": "-0.4974451"
         }
     }
 }
 ```
 
-### Colección /users
+### 1.2.3. Colección /users
 
 Todos los servicios de esta colección requieren del token de autenticación.
 
@@ -426,12 +420,12 @@ Devuelve la información del perfil del usuario autenticado. El booleano **me** 
 ```json
 {
     "user": {
-        "id": 27,
+        "id": 158,
         "name": "Tom",
-        "email": "tom2@email.com",
-        "avatar": "img\\users\\1541009537495.jpg",
-        "lat": "37.8235530",
-        "lng": "-1.2654570",
+        "email": "tom6@email.com",
+        "avatar": "http://localhost:3000/img/users/1666771951144.jpg",
+        "lat": 37.423553,
+        "lng": -0.654657,
         "me": true
     }
 }
@@ -449,9 +443,9 @@ Ejemplo de llamada a **/users/22**:
         "id": 22,
         "name": "John Wayne",
         "email": "email2@email.com",
-        "avatar": "img/users/1539948671405.jpg",
-        "lat": "41.3254320",
-        "lng": "-1.2345500",
+        "avatar": "http://localhost:3000/img/users/1539948671405.jpg",
+        "lat": 41.325432,
+        "lng": -1.23455,
         "me": false
     }
 }
@@ -470,7 +464,7 @@ Ejemplo de petición:
 }
 ```
 
-Responde simplemente con una confirmación si todo ha ido bien (O error 400 si los datos de entrada son insuficientes o erróneos):
+La respuesta estará vacía (código 204) si todo ha ido bien, o error 400 si los datos de entrada son insuficientes o erróneos:
 
 ```json
 {
@@ -492,7 +486,7 @@ Responde con la url de la nueva imagen almacenada en el servidor:
 
 ```json
 {
-    "avatar": "img/users/1545565439800.jpg"
+    "avatar": "http://localhost:3000/img/users/1545565439800.jpg"
 }
 ```
 
@@ -506,10 +500,4 @@ Actualiza la contraseña del usuario autenticado:
 }
 ```
 
-Responde simplemente con una confirmación si todo ha ido bien:
-
-```json
-{
-    "ok": true
-}
-```
+La respuesta estará vacía (código 204) si todo ha ido bien
