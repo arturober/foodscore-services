@@ -20,7 +20,7 @@ export class CommentSingleInterceptor implements NestInterceptor {
         if (c.restaurant?.image && !c.restaurant.image.startsWith('http')) {
           c.restaurant.image = baseUrl + c.restaurant.image;
         }
-        return c;
+        return { comment: c };
       }),
     );
   }
