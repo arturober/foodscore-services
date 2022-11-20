@@ -4,6 +4,7 @@ import {
   IsNumber,
   IsNotEmpty,
   IsOptional,
+  IsBase64,
 } from 'class-validator';
 import { Transform } from 'class-transformer';
 import * as crypto from 'crypto';
@@ -24,15 +25,18 @@ export class RegisterUserDto {
   @IsString()
   @IsNotEmpty()
   @Transform((p) =>
-    p.value
+    p.value && typeof p.value === 'string'
       ? crypto.createHash('sha256').update(p.value, 'utf-8').digest('base64')
-      : '',
+      : p.value,
   )
   password: string;
 
   @IsString()
   @IsNotEmpty()
-  @Transform((p) => (p.value.startsWith('http') ? '' : p.value))
+  @IsBase64()
+  @Transform((v) =>
+    typeof v.value === 'string' ? v.value.split(',')[1] || v.value : v.value,
+  )
   avatar: string;
 
   @IsNumber()

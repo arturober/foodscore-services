@@ -1,6 +1,7 @@
 import { Transform } from 'class-transformer';
 import {
   IsArray,
+  IsBase64,
   IsEmpty,
   IsNotEmpty,
   IsNumber,
@@ -12,12 +13,12 @@ import {
 export class CreateRestaurantDto {
   @IsString()
   @IsNotEmpty()
-  @Transform((v) => v.value.trim())
+  @Transform((v) => (typeof v.value === 'string' ? v.value.trim() : v))
   name: string;
 
   @IsString()
   @IsNotEmpty()
-  @Transform((v) => v.value.trim())
+  @Transform((v) => (typeof v.value === 'string' ? v.value.trim() : v))
   description: string;
 
   @IsArray()
@@ -31,11 +32,15 @@ export class CreateRestaurantDto {
 
   @IsString()
   @IsNotEmpty()
+  @IsBase64()
+  @Transform((v) =>
+    typeof v.value === 'string' ? v.value.split(',')[1] || v.value : v.value,
+  )
   image: string;
 
   @IsString()
   @IsNotEmpty()
-  @Transform((v) => v.value.trim())
+  @Transform((v) => (typeof v.value === 'string' ? v.value.trim() : v))
   cuisine: string;
 
   @IsString()

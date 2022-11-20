@@ -1,4 +1,4 @@
-import { IsNumber, IsInt, IsString, Min, Max } from 'class-validator';
+import { IsInt, IsString, Min, Max, IsNotEmpty } from 'class-validator';
 
 export class InsertCommentDto {
   @IsInt()
@@ -7,5 +7,6 @@ export class InsertCommentDto {
   readonly stars: number;
 
   @IsString()
+  @IsNotEmpty()
   readonly text: string;
 }
