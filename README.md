@@ -113,7 +113,7 @@ En caso de error en el login (usuario y contraseña no válidos), se devolverá 
 }
 ```
 
-<!-- * **POST /auth/google**
+* **POST /auth/google**
 
 Este servicio recibe el campo **id_token** que devuelve la identificación mediante Google en el cliente. Lo valida y comprueba el correo en la base de datos. Si el correo existe funciona como un login normal, y si no existe registra al usuario (a partir de los datos obtenidos de Google) en la base de datos. Devuelve un token de autenticación válido para el servidor (como el login).
 
@@ -157,8 +157,9 @@ Ejemplo de respuesta:
 {
     "accessToken": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjE0ODU5MDA1MzgsImlkIjoiMSIsIm5hbWUiOiJQcnVlYmEiLCJlbWFpbCI6InBydWViYUBjb3JyZW8uZXMifQ.vf7hwA3gceCDvOCa9RoWxR9cJ5mARnbAs6Nv9VBlPdc"
 }
+```
 
-https://lorenstewart.me/2017/03/12/using-node-js-to-interact-with-facebooks-graph-api/ -->
+https://lorenstewart.me/2017/03/12/using-node-js-to-interact-with-facebooks-graph-api/ 
 
 * **POST /auth/register**
 
