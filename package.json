@@ -33,6 +33,7 @@
     "@nestjs/platform-express": "^9.0.0",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.13.2",
+    "firebase-admin": "^11.5.0",
     "google-auth-library": "^8.6.0",
     "image-downloader": "^4.3.0",
     "passport": "^0.6.0",

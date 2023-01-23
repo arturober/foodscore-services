@@ -11,7 +11,7 @@ import { ImageService } from 'src/commons/image/image.service';
 export class UsersService {
   constructor(
     private readonly imageService: ImageService,
-    @InjectRepository(User) private readonly usersRepo: EntityRepository<User>
+    @InjectRepository(User) private readonly usersRepo: EntityRepository<User>,
   ) {}
 
   async getUser(id: number): Promise<User> {
@@ -41,7 +41,7 @@ export class UsersService {
   async updatePhoto(id: number, photoDto: UpdatePhotoDto): Promise<string> {
     photoDto.avatar = await this.imageService.saveImage(
       'users',
-      photoDto.avatar
+      photoDto.avatar,
     );
     await this.usersRepo.nativeUpdate(id, photoDto);
     return photoDto.avatar;

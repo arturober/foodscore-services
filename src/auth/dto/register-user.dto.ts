@@ -46,4 +46,8 @@ export class RegisterUserDto {
   @IsNumber()
   @IsOptional()
   lng?: number;
+
+  @IsString()
+  @IsOptional()
+  readonly firebaseToken: string;
 }

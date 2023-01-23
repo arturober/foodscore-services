@@ -1,5 +1,5 @@
 import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
-import { Exclude, serialize } from 'class-transformer';
+import { Exclude } from 'class-transformer';
 
 @Entity()
 export class User {
