@@ -4,6 +4,6 @@ import { FirebaseService } from './firebase/firebase.service';
 
 @Module({
   providers: [ImageService, FirebaseService],
-  exports: [ImageService],
+  exports: [ImageService, FirebaseService],
 })
 export class CommonsModule {}
