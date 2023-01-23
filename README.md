@@ -86,14 +86,15 @@ Authorization: Bearer auth_token
 
 El servicio comprueba si un usuario y contraseña son correctos, devolviendo un token de autenticación (JWT) si todo va bien. Opcionalmente se puede enviar la posición del usuario para que la actualice.
 
-Ejemplo de datos en la **petición** (_lat_ y _lng_ son opcionales):
+Ejemplo de datos en la **petición** (_lat_, _lng_ y _firebaseToken_ son opcionales):
 
 ```json
 {
     "email": "prueba@email.es",
     "password": "1234",
     "lat": 37.823553,
-    "lng": -1.265457
+    "lng": -1.265457,
+    "firebaseToken": "token Firebase del cliente (proyecto Ionic)"
 }
 ```
 Si el login es correcto, la **respuesta** será algo como esto:
@@ -117,13 +118,14 @@ En caso de error en el login (usuario y contraseña no válidos), se devolverá 
 
 Este servicio recibe el campo **id_token** que devuelve la identificación mediante Google en el cliente. Lo valida y comprueba el correo en la base de datos. Si el correo existe funciona como un login normal, y si no existe registra al usuario (a partir de los datos obtenidos de Google) en la base de datos. Devuelve un token de autenticación válido para el servidor (como el login).
 
-Ejemplo de envío (lat y lng son opcionales):
+Ejemplo de envío (_lat_, _lng_ y _firebaseToken_ son opcionales):
 
 ```json
 {
     "token": "id_token de Google",
     "lat": 37.823553,
-    "lng": -1.265457
+    "lng": -1.265457,
+    "firebaseToken": "token Firebase del cliente (proyecto Ionic)"
 }
 ```
 
@@ -141,13 +143,14 @@ https://developers.google.com/identity/sign-in/web/backend-auth
 
 Este servicio recibe el campo **accessToken** que devuelve la identificación mediante Facebook en el cliente. Lo valida y comprueba el correo en la base de datos. Si el correo existe funciona como un login normal, y si no existe registra al usuario (a partir de los datos obtenidos de Facebook) en la base de datos. Devuelve un token de autenticación válido para el servidor (como el login).
 
-Ejemplo de envío (lat y lng son opcionales):
+Ejemplo de envío (_lat_, _lng_ y _firebaseToken_ son opcionales):
 
 ```json
 {
     "token": "accessToken de Facebook",
     "lat": 37.823553,
-    "lng": -1.265457
+    "lng": -1.265457,
+    "firebaseToken": "token Firebase del cliente (proyecto Ionic)"
 }
 ```
 
