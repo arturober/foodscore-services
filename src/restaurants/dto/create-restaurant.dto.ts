@@ -5,8 +5,11 @@ import {
   IsEmpty,
   IsNotEmpty,
   IsNumber,
+  IsOptional,
   IsString,
   Length,
+  Max,
+  Min,
   MinLength,
 } from 'class-validator';
 
@@ -56,6 +59,6 @@ export class CreateRestaurantDto {
   @IsNotEmpty()
   lng: number;
 
-  @IsEmpty()
+  @IsOptional()
   stars: number;
 }

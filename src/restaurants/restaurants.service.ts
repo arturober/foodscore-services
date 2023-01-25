@@ -77,12 +77,17 @@ export class RestaurantsService {
     const restaurant = Restaurant.fromCreateDto(createDto);
     restaurant.image = imageUrl;
     restaurant.creator = authUser;
+    restaurant.stars = 0;
 
     await this.restaurantRepo.persistAndFlush(restaurant);
     return restaurant;
   }
 
-  async update(id: number, updateDto: UpdateRestaurantDto, authUser: User): Promise<Restaurant> {
+  async update(
+    id: number,
+    updateDto: UpdateRestaurantDto,
+    authUser: User,
+  ): Promise<Restaurant> {
     const rest = await this.findOne(id, authUser);
 
     if (rest.creator.id !== authUser.id) {
@@ -91,13 +96,15 @@ export class RestaurantsService {
       );
     }
 
+    const stars = rest.stars;
     for (const prop in updateDto) {
       rest[prop] = updateDto[prop];
     }
+    rest.stars = stars;
     if (updateDto.image && !updateDto.image.startsWith('http')) {
       updateDto.image = await this.imageService.saveImage(
         'restaurants',
-        updateDto.image
+        updateDto.image,
       );
     }
     await this.restaurantRepo.persistAndFlush(rest);
