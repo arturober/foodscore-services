@@ -102,7 +102,7 @@ export class RestaurantsService {
     }
     rest.stars = stars;
     if (updateDto.image && !updateDto.image.startsWith('http')) {
-      updateDto.image = await this.imageService.saveImage(
+      rest.image = await this.imageService.saveImage(
         'restaurants',
         updateDto.image,
       );
