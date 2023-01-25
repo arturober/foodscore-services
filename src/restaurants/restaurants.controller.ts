@@ -8,6 +8,7 @@ import {
   Param,
   ParseIntPipe,
   Post,
+  Put,
   UseInterceptors,
   ValidationPipe,
 } from '@nestjs/common';
@@ -17,6 +18,7 @@ import { InsertCommentDto } from 'src/comments/dto/insert-comment.dto';
 import { Restaurant } from 'src/entities/Restaurant';
 import { User } from 'src/entities/User';
 import { CreateRestaurantDto } from './dto/create-restaurant.dto';
+import { UpdateRestaurantDto } from './dto/update-restaurant.dto';
 import { CommentListInterceptor } from './interceptors/comment-list.interceptor';
 import { CommentSingleInterceptor } from './interceptors/comment-single.interceptor';
 import { RestaurantListInterceptor } from './interceptors/restaurant-list.interceptor';
@@ -68,6 +70,17 @@ export class RestaurantsController {
     @AuthUser() authUser: User,
   ): Promise<Restaurant> {
     return this.restaurantsService.create(createRestaurantDto, authUser);
+  }
+
+  @Put(':id')
+  @UseInterceptors(RestaurantSingleInterceptor)
+  async update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body(new ValidationPipe({ transform: true }))
+    updateRestaurantDto: UpdateRestaurantDto,
+    @AuthUser() authUser: User,
+  ): Promise<Restaurant> {
+    return this.restaurantsService.update(id, updateRestaurantDto, authUser);
   }
 
   @Delete(':id')
