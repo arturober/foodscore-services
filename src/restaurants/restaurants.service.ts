@@ -98,7 +98,9 @@ export class RestaurantsService {
 
     const stars = rest.stars;
     for (const prop in updateDto) {
-      rest[prop] = updateDto[prop];
+      if (prop !== 'image') {
+        rest[prop] = updateDto[prop];
+      }
     }
     rest.stars = stars;
     if (updateDto.image && !updateDto.image.startsWith('http')) {
