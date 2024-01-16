@@ -1,6 +1,7 @@
 import { EntityRepository } from '@mikro-orm/mariadb';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { FirebaseService } from 'src/commons/firebase/firebase.service';
 import { Comment } from 'src/entities/Comment';
 import { Restaurant } from 'src/entities/Restaurant';
 import { User } from 'src/entities/User';
@@ -13,6 +14,7 @@ export class CommentsService {
     private readonly commentRepo: EntityRepository<Comment>,
     @InjectRepository(Restaurant)
     private readonly restRepo: EntityRepository<Restaurant>,
+    private readonly firebaseService: FirebaseService,
   ) {}
 
   async insertComment(
@@ -22,7 +24,9 @@ export class CommentsService {
   ): Promise<Comment> {
     const comment = Comment.fromCreateDto(commentDto);
     comment.user = authUser;
-    comment.restaurant = await this.restRepo.findOne(restId);
+    comment.restaurant = await this.restRepo.findOne(restId, {
+      populate: ['creator'],
+    });
     if (!comment.restaurant) {
       throw new NotFoundException({
         status: 404,
@@ -30,6 +34,14 @@ export class CommentsService {
       });
     }
     await this.commentRepo.persistAndFlush(comment);
+    if (comment.restaurant.creator.firebaseToken) {
+      await this.firebaseService.sendMessage(
+        comment.restaurant.creator.firebaseToken,
+        'A new user has rated your restaurant!',
+        `${authUser.name} has bought ${comment.restaurant.name}`,
+        { prodId: '' + comment.restaurant.id },
+      );
+    }
     return comment;
   }
 

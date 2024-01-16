@@ -9,6 +9,7 @@ import { ImageService } from 'src/commons/image/image.service';
 import { Restaurant } from 'src/entities/Restaurant';
 import { User } from 'src/entities/User';
 import { CreateRestaurantDto } from './dto/create-restaurant.dto';
+import { UpdateRestaurantDto } from './dto/update-restaurant.dto';
 
 @Injectable()
 export class RestaurantsService {
@@ -76,9 +77,40 @@ export class RestaurantsService {
     const restaurant = Restaurant.fromCreateDto(createDto);
     restaurant.image = imageUrl;
     restaurant.creator = authUser;
+    restaurant.stars = 0;
 
     await this.restaurantRepo.persistAndFlush(restaurant);
     return restaurant;
+  }
+
+  async update(
+    id: number,
+    updateDto: UpdateRestaurantDto,
+    authUser: User,
+  ): Promise<Restaurant> {
+    const rest = await this.findOne(id, authUser);
+
+    if (rest.creator.id !== authUser.id) {
+      throw new ForbiddenException(
+        "This restaurant doesn't belong to you. You can't update it",
+      );
+    }
+
+    const stars = rest.stars;
+    for (const prop in updateDto) {
+      if (prop !== 'image') {
+        rest[prop] = updateDto[prop];
+      }
+    }
+    rest.stars = stars;
+    if (updateDto.image && !updateDto.image.startsWith('http')) {
+      rest.image = await this.imageService.saveImage(
+        'restaurants',
+        updateDto.image,
+      );
+    }
+    await this.restaurantRepo.persistAndFlush(rest);
+    return rest;
   }
 
   async remove(id: number, authUser: User): Promise<void> {
