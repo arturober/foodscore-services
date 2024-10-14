@@ -17,11 +17,12 @@ export class RestaurantListInterceptor implements NestInterceptor {
     const baseUrl = `${this.configService.get<string>('protocol')}://${
       req.headers.host
     }/${this.configService.get<string>('basePath')}`; 
-    
+
     return next.handle().pipe(
-      map((restaurants: Restaurant[]) => {
+      map((resp: {restaurants: Restaurant[]}) => {
         return {
-          restaurants: restaurants.map((r) => {
+          ...resp,
+          restaurants: resp.restaurants.map((r) => {
             r.image = r.image && baseUrl + r.image;
             r.mine = r.creator.id === req.user.id;
             if (r.creator?.avatar && !r.creator.avatar.startsWith('http')) {

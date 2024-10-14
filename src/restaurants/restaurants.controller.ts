@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  DefaultValuePipe,
   Delete,
   Get,
   HttpCode,
@@ -9,6 +10,7 @@ import {
   ParseIntPipe,
   Post,
   Put,
+  Query,
   UseInterceptors,
   ValidationPipe,
 } from '@nestjs/common';
@@ -24,6 +26,7 @@ import { CommentSingleInterceptor } from './interceptors/comment-single.intercep
 import { RestaurantListInterceptor } from './interceptors/restaurant-list.interceptor';
 import { RestaurantSingleInterceptor } from './interceptors/restaurant-single.interceptor';
 import { RestaurantsService } from './restaurants.service';
+import { RestaurantFindOptions } from './interfaces/restaurant-find-optiones';
 
 @Controller('restaurants')
 export class RestaurantsController {
@@ -34,23 +37,34 @@ export class RestaurantsController {
 
   @Get()
   @UseInterceptors(RestaurantListInterceptor)
-  findAll(@AuthUser() authUser: User): Promise<Restaurant[]> {
-    return this.restaurantsService.findAll(authUser);
-  }
-
-  @Get('mine')
-  @UseInterceptors(RestaurantListInterceptor)
-  findMine(@AuthUser() authUser: User): Promise<Restaurant[]> {
-    return this.restaurantsService.findByUser(authUser.id, authUser);
-  }
-
-  @Get('user/:id')
-  @UseInterceptors(RestaurantListInterceptor)
-  findByUser(
-    @Param('id', ParseIntPipe) idUser: number,
+  async findAll(
     @AuthUser() authUser: User,
-  ): Promise<Restaurant[]> {
-    return this.restaurantsService.findByUser(idUser, authUser);
+    @Query('creator', new DefaultValuePipe(0), ParseIntPipe)
+    creator?: number,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe)
+    page?: number,
+    @Query('search', new DefaultValuePipe(null))
+    search?: string
+  ) {
+    page = page < 1? 1 : page;
+    const options: RestaurantFindOptions = {
+      page, search
+    }
+    let result: [Restaurant[], number];
+    if(creator) {
+      result = await this.restaurantsService.findByUser(creator, authUser, options);
+    } else {
+      result = await this.restaurantsService.findAll(authUser, options);
+    }
+
+    const [restaurants, count] = result;
+
+    return {
+      restaurants,
+      count,
+      page,
+      more: page * 12 < count
+    }
   }
 
   @Get(':id')
