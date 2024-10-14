@@ -27,6 +27,6 @@ async function bootstrap() {
   //   });
   // } catch (e) {}
 
-  await app.listen(3000);
+  await app.listen(appConfig().port);
 }
 bootstrap();
