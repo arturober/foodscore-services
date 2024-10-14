@@ -7,18 +7,19 @@ import mikroOrmConfig from './mikro-orm.config';
 import { UsersModule } from './users/users.module';
 import { CommentsModule } from './comments/comments.module';
 import { AuthModule } from './auth/auth.module';
+import { ConfigModule } from '@nestjs/config';
+import configuration from './app.config';
 
 @Module({
   imports: [
     MikroOrmModule.forRoot(mikroOrmConfig),
     AuthModule.forRoot({
-      // Put your own Google ID here (same as the client's Google ID)
-      googleId:
-        '746820501392-nc4pet9ffnm8gq8hg005re9e6ho65nua.apps.googleusercontent.com',
+      googleId: configuration().google_id,
     }),
     RestaurantsModule,
     UsersModule,
     CommentsModule,
+    ConfigModule.forRoot({ load: [configuration], isGlobal: true }),
   ],
   controllers: [AppController],
   providers: [AppService],
