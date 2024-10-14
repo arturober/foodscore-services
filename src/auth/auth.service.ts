@@ -36,7 +36,7 @@ export class AuthService {
 
   async registerUser(userDto: RegisterUserDto): Promise<RegisterResponse> {
     userDto.avatar = await this.imageService.saveImage('users', userDto.avatar);
-    await this.userRepo.nativeInsert(userDto);
+    await this.userRepo.insert(userDto);
     return { email: userDto.email };
   }
 
@@ -52,7 +52,7 @@ export class AuthService {
       user.lat = userDto.lat;
       user.lng = userDto.lng;
     }
-    await this.userRepo.flush();
+    await this.userRepo.getEntityManager().flush();
     return this.createToken(user);
   }
 
@@ -76,7 +76,7 @@ export class AuthService {
         name: payload.name,
         avatar,
       };
-      await this.userRepo.nativeInsert(user2);
+      await this.userRepo.insert(user2);
       user = await this.usersService.getUserbyEmail(email);
     }
 
@@ -88,7 +88,7 @@ export class AuthService {
       user.lat = tokenDto.lat;
       user.lng = tokenDto.lng;
     }
-    await this.userRepo.flush();
+    await this.userRepo.getEntityManager().flush();
 
     return this.createToken(user as User);
   }
@@ -124,20 +124,19 @@ export class AuthService {
         name: respUser.name,
         avatar,
       };
-      await this.userRepo.nativeInsert(user2);
+      await this.userRepo.insert(user2);
       user = await this.usersService.getUserbyEmail(respUser.email);
     }
 
     if (tokenDto.firebaseToken) {
       user.firebaseToken = tokenDto.firebaseToken;
-      await this.userRepo.flush();
     }
 
     if (tokenDto.lat && tokenDto.lng) {
       user.lat = tokenDto.lat;
       user.lng = tokenDto.lng;
     }
-    await this.userRepo.flush();
+    await this.userRepo.getEntityManager().flush();
 
     return this.createToken(user as User);
   }

@@ -1,4 +1,4 @@
-import { EntityRepository, SelectQueryBuilder } from '@mikro-orm/mariadb';
+import { EntityRepository, SelectQueryBuilder, raw } from '@mikro-orm/mariadb';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import {
   ForbiddenException,
@@ -26,15 +26,15 @@ export class RestaurantsService {
   ): SelectQueryBuilder<Restaurant> {
     let builder = this.restaurantRepo
       .createQueryBuilder('r')
-      .select('*')
-      .addSelect(
-        `haversine(r.lat, r.lng, ${authUser.lat}, ${authUser.lng}) AS distance`,
-      )
+      .select([
+        '*',
+        raw(`haversine(r.lat, r.lng, ${authUser.lat}, ${authUser.lng}) AS distance`),
+      ])
       .orderBy({ distance: 'ASC' });
 
     if (includeCommented) {
       builder = builder.addSelect(
-        `EXISTS (SELECT id FROM comment WHERE user = ${authUser.id} AND restaurant = r.id) AS commented`,
+        raw(`EXISTS (SELECT id FROM comment WHERE user = ${authUser.id} AND restaurant = r.id) AS commented`),
       );
     }
 
@@ -79,7 +79,7 @@ export class RestaurantsService {
     restaurant.creator = authUser;
     restaurant.stars = 0;
 
-    await this.restaurantRepo.persistAndFlush(restaurant);
+    await this.restaurantRepo.insert(restaurant);
     return restaurant;
   }
 
@@ -109,7 +109,7 @@ export class RestaurantsService {
         updateDto.image,
       );
     }
-    await this.restaurantRepo.persistAndFlush(rest);
+    await this.restaurantRepo.getEntityManager().flush();
     return rest;
   }
 

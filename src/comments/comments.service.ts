@@ -24,6 +24,7 @@ export class CommentsService {
   ): Promise<Comment> {
     const comment = Comment.fromCreateDto(commentDto);
     comment.user = authUser;
+    comment.date = new Date();
     comment.restaurant = await this.restRepo.findOne(restId, {
       populate: ['creator'],
     });
@@ -33,7 +34,7 @@ export class CommentsService {
         error: 'Restaurant not found',
       });
     }
-    await this.commentRepo.persistAndFlush(comment);
+    await this.commentRepo.insert(comment);
     if (comment.restaurant.creator.firebaseToken) {
       await this.firebaseService.sendMessage(
         comment.restaurant.creator.firebaseToken,

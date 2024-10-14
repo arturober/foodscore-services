@@ -152,3 +152,20 @@ ALTER TABLE `restaurant`
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+
+DELIMITER $$
+--
+-- Funciones
+--
+CREATE DEFINER=`root`@`localhost` FUNCTION `haversine` (`lat1` FLOAT, `lon1` FLOAT, `lat2` FLOAT, `lon2` FLOAT) RETURNS FLOAT DETERMINISTIC NO SQL COMMENT 'Returns the distance in degrees on the Earth\r\n             between two known points of latitude and longitude' BEGIN
+    RETURN DEGREES(
+        	ACOS(
+              COS(RADIANS(lat1)) *
+              COS(RADIANS(lat2)) *
+              COS(RADIANS(lon2) - RADIANS(lon1)) +
+              SIN(RADIANS(lat1)) * SIN(RADIANS(lat2))
+            )
+    	  )*111.045;
+END$$
+
+DELIMITER ;

@@ -27,8 +27,6 @@ export class Comment {
   @ManyToOne({
     entity: () => Restaurant,
     fieldName: 'restaurant',
-    onUpdateIntegrity: 'cascade',
-    onDelete: 'cascade',
     nullable: false,
   })
   restaurant: Restaurant;
@@ -36,8 +34,6 @@ export class Comment {
   @ManyToOne({
     entity: () => User,
     fieldName: 'user',
-    onUpdateIntegrity: 'cascade',
-    onDelete: 'cascade',
     nullable: false,
   })
   user: User;

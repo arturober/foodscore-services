@@ -50,8 +50,6 @@ export class Restaurant {
   @ManyToOne({
     entity: () => User,
     fieldName: 'creator',
-    onUpdateIntegrity: 'cascade',
-    onDelete: 'cascade',
     nullable: false,
   })
   creator!: User;
