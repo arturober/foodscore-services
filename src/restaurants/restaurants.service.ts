@@ -99,12 +99,11 @@ export class RestaurantsService {
       false,
       {
         ...where,
-        creator: { id: userId },
+        creator: userId,
       },
       { distance: QueryOrder.ASC },
       options.page,
     )
-      .where({ creator: userId  })
       .getResultAndCount();
   }
 
