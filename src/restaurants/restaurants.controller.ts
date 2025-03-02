@@ -44,11 +44,13 @@ export class RestaurantsController {
     @Query('page', new DefaultValuePipe(1), ParseIntPipe)
     page?: number,
     @Query('search', new DefaultValuePipe(null))
-    search?: string
+    search?: string,
+    @Query('open', new DefaultValuePipe(0), ParseIntPipe)
+    open?: number,
   ) {
     page = page < 1? 1 : page;
     const options: RestaurantFindOptions = {
-      page, search
+      page, search, open: !!open
     }
     let result: [Restaurant[], number];
     if(creator) {

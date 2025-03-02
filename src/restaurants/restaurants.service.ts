@@ -69,7 +69,7 @@ export class RestaurantsService {
       authUser,
       false,
       false,
-      options.search ? { name: { $like: '%' + options.search + '%' } } : null,
+      this.getWhere(options),
       { distance: QueryOrder.ASC },
       options.page,
     ).getResultAndCount();
@@ -89,22 +89,17 @@ export class RestaurantsService {
   }
 
   findByUser(userId: number, authUser: User, options: RestaurantFindOptions) {
-    const where = options.search
-      ? { name: { $like: '%' + options.search + '%' } }
-      : {};
-
     return this.createRestaurantSelect(
       authUser,
       false,
       false,
       {
-        ...where,
+        ...this.getWhere(options),
         creator: userId,
       },
       { distance: QueryOrder.ASC },
       options.page,
-    )
-      .getResultAndCount();
+    ).getResultAndCount();
   }
 
   async create(
@@ -162,5 +157,21 @@ export class RestaurantsService {
       );
     }
     await this.restaurantRepo.nativeDelete(id);
+  }
+
+  private getWhere(
+    options: RestaurantFindOptions,
+    where: QBFilterQuery<Restaurant> = {},
+  ) {
+    where = {
+      ...where,
+      ...(options.search
+        ? { name: { $like: '%' + options.search + '%' } }
+        : {}),
+      ...(options.open
+        ? { daysOpen: { $like: `%${new Date().getDay().toString()}%` } }
+        : {}),
+    };
+    return where;
   }
 }
