@@ -63,6 +63,7 @@ export class AuthService {
       audience: this.googleId,
     });
     const payload = ticket.getPayload();
+    console.log(payload);
     const email = payload.email;
     let user = await this.usersService.getUserbyEmail(email);
 
