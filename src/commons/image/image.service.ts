@@ -34,7 +34,7 @@ export class ImageService {
 
   async downloadImage(dir: string, url: string): Promise<string> {
     const file = `${Date.now()}.jpg`;
-    const filePath = path.join('img', dir, file);
+    const filePath = path.join(path.resolve('./'), 'img', dir, file);
     await download.image({
       url,
       dest: filePath,
