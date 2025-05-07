@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as express from 'express';
-// import * as admin from 'firebase-admin';
+import * as admin from 'firebase-admin';
 import { useContainer } from 'class-validator';
 import appConfig from './app.config';
 
@@ -18,14 +18,13 @@ async function bootstrap() {
     appConfig().basePath ? appConfig().basePath.slice(0, -1) : '',
   );
 
-  // try {
-  //   const serviceAccount =
-  //     await require('../firebase/dwec2021-firebase-adminsdk-103so-9b60f28cf5.json');
-  //   admin.initializeApp({
-  //     credential: admin.credential.cert(serviceAccount),
-  //     databaseURL: 'https://dwec2019.firebaseio.com',
-  //   });
-  // } catch (e) {}
+  try {
+    //eslint-disable-next-line @typescript-eslint/no-var-requires
+    const serviceAccount = require('../firebase/firebase_key.json');
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount),
+    });
+  } catch(e) {}
 
   await app.listen(appConfig().port);
 }
