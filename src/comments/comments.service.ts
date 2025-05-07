@@ -39,8 +39,8 @@ export class CommentsService {
       await this.firebaseService.sendMessage(
         comment.restaurant.creator.firebaseToken,
         'A new user has rated your restaurant!',
-        `${authUser.name} has bought ${comment.restaurant.name}`,
-        { prodId: '' + comment.restaurant.id },
+        `${authUser.name} has rated ${comment.restaurant.name}`,
+        { restId: '' + comment.restaurant.id },
       );
     }
     return comment;
