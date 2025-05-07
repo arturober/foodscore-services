@@ -226,6 +226,18 @@ Los días que abre el restaurante se almacena en la base de datos como cadena de
 }
 ```
 
+**Opciones**: Se pueden pasar los siguientes parámetros opcionales en la url (*query string*):
+
+\- **page**: Página a cargar (por defecto 1)
+
+\- **search**: Cádena de búsqueda para filtrar por **nombre** de restaurante
+
+\- **open**: Con valor a 1 indica que solo se mostrarán los restaurantes abiertos el día actual, 0 o no presente para mostrar todos
+
+\- **creator**: Solo muestra los restaurantes creados por el usuario cuya id se pase (por defecto 0, todos)
+
+Ejemplo: */restaurants?creator=2&page=1&search=rest&open=1*
+
 * **GET /restaurants/mine**
 
 Igual que el servicio **/restaurants** pero sólo devuelve los restaurantes cuyo creador es el usuario actual.
