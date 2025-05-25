@@ -140,4 +140,9 @@ export class AuthService {
 
     return this.createToken(user as User);
   }
+
+  async logout(authUser: User) {
+    authUser.firebaseToken = null;
+    await this.userRepo.upsert(authUser);
+  }
 }
